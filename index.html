@@ -1,0 +1,125 @@
+<body style="margin: 0">
+<div style="position: absolute; font-size: large; color: white;">
+	Score: <span id="score"></span>
+</div>
+<script type="text/javascript" src="coffeescript.js"></script>
+<script type="text/javascript" src="three.js"></script>
+
+<script type="text/coffeescript">
+scene = new THREE.Scene()
+camera = new THREE.OrthographicCamera -1, 1, -1, 1, 0.1, 1000
+camera.position.z = 5
+
+renderer = new THREE.WebGLRenderer antialias: true
+document.body.appendChild renderer.domElement
+
+render = ->
+	el = document.body
+	w = el.clientWidth
+	h = el.clientHeight
+	renderer.setSize w, h
+	h = h/w
+	w = 1
+	camera.left = -w
+	camera.right = w
+	camera.bottom = -h
+	camera.top = h
+	camera.updateProjectionMatrix() # May be expensive
+	renderer.render scene, camera
+
+new_object = ->
+	geometry = new THREE.SphereGeometry(0.01, 32, 16)
+	material = new THREE.MeshBasicMaterial color: 0xffffff
+	object = new THREE.Mesh geometry, material
+	scene.add object
+	return object
+
+prev_time = undefined
+events_seen = []
+document.body.addEventListener("keydown", (ev) -> events_seen.push(ev))
+next_frame = -> new Promise (resolve, reject) ->
+	requestAnimationFrame (time) ->
+		prev_time = time
+		events = [events_seen...]
+		events_seen = []
+		resolve([time/1000, events])
+
+line = new THREE.Line(
+	new THREE.BufferGeometry().setFromPoints([
+		new THREE.Vector3(0, 1, 0),
+		new THREE.Vector3(0, -1, 0)
+		])
+	)
+scene.add line
+
+left = new_object()
+right = new_object()
+
+total_score = 0
+n_trials = 0
+update_score = (score) ->
+	total_score += score
+	n_trials += 1
+	document.getElementById("score").innerHTML = Math.round(total_score/n_trials*100)
+
+trial = ->
+	left.position.x = -1
+	right.position.x = 1
+	
+	left.material.color.setHex 0xffffff
+	right.material.color.setHex 0xffffff
+
+	left_speed = (Math.random() + 0.5)*0.5
+	right_speed = -(Math.random() + 0.5)*0.5
+	
+	left_ttc = Math.abs 1/left_speed
+	right_ttc = Math.abs 1/right_speed
+	
+	ttc_diff = right_ttc - left_ttc
+	min_ttc = Math.min left_ttc, right_ttc
+
+	side_selected = 0
+	score = undefined
+
+	t = undefined
+	t0 = undefined
+	while true
+		[time, events] = await next_frame()
+		if not t?
+			t = time
+			t0 = time
+		dt = time - t
+		t = time
+		for event in events
+			if score?
+				break
+			if event.key == "ArrowLeft"
+				side_selected = -1
+				left.material.color.setHex 0xff00ff
+			else if event.key == "ArrowRight"
+				side_selected = 1
+				right.material.color.setHex 0xff00ff
+			score = (min_ttc - (t - t0))/min_ttc
+			if side_selected == Math.sign(ttc_diff)
+				score *= -2
+			update_score(score)
+
+		left.position.x += left_speed * dt
+		right.position.x += right_speed * dt
+		
+		if left.position.x > 0
+			left.position.x = 0
+			return
+		if right.position.x < 0
+			right.position.x = 0
+			return
+
+		render()
+
+do ->
+	while true
+		await trial()
+		await new Promise (a) -> setTimeout a, 1000
+</script>
+
+</body>

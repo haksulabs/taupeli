@@ -1,4 +1,4 @@
-<body style="margin: 0">
+<body style="margin: 0; cursor: none">
 <div style="position: absolute; font-size: large; color: white;">
 	Score: <span id="score"></span>
 </div>
@@ -37,6 +37,7 @@ new_object = ->
 prev_time = undefined
 events_seen = []
 document.body.addEventListener("keydown", (ev) -> events_seen.push(ev))
+document.body.addEventListener("mousedown", (ev) -> events_seen.push(ev))
 next_frame = -> new Promise (resolve, reject) ->
 	requestAnimationFrame (time) ->
 		prev_time = time
@@ -93,10 +94,10 @@ trial = ->
 		for event in events
 			if score?
 				break
-			if event.key == "ArrowLeft"
+			if event.key == "ArrowLeft" or event.clientX < event.target.clientWidth/2
 				side_selected = -1
 				left.material.color.setHex 0xff00ff
-			else if event.key == "ArrowRight"
+			else if event.key == "ArrowRight" or event.clientX > event.target.clientWidth/2
 				side_selected = 1
 				right.material.color.setHex 0xff00ff
 			score = (min_ttc - (t - t0))/min_ttc

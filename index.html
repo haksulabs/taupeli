@@ -71,13 +71,25 @@ trial = ->
 	left.material.color.setHex 0xffffff
 	right.material.color.setHex 0xffffff
 
+	ttc_diff = Math.random() - 0.5
+
 	left_speed = (Math.random() + 0.5)*0.5
 	right_speed = -(Math.random() + 0.5)*0.5
 	
 	left_ttc = Math.abs 1/left_speed
 	right_ttc = Math.abs 1/right_speed
+
+		
+	right_delay = ttc_diff + left_ttc - right_ttc
 	
-	ttc_diff = right_ttc - left_ttc
+	if right_delay > 0 
+		right.position.x += (right_delay * -right_speed)
+		right_ttc = Math.abs right.position.x / right_speed
+	else
+		left.position.x += right_delay * left_speed
+		left_ttc = Math.abs left.position.x / left_speed
+
+	
 	min_ttc = Math.min left_ttc, right_ttc
 
 	side_selected = 0
@@ -85,6 +97,20 @@ trial = ->
 
 	t = undefined
 	t0 = undefined
+
+	trialinfo = {v0:left_speed, v1:right_speed, ttcdiff: ttc_diff, minttc:min_ttc}
+	
+
+
+	trialdone = 0
+
+	
+	#trialinfo =
+	#	v0 = left_speed
+	#	v1 = right_speed
+
+	
+
 	while true
 		[time, events] = await next_frame()
 		if not t?
@@ -104,17 +130,30 @@ trial = ->
 			score = (min_ttc - (t - t0))/min_ttc
 			if side_selected == Math.sign(ttc_diff)
 				score *= -2
+				trialinfo.correct = 0
+			else if side_selected == -Math.sign(ttc_diff)
+				trialinfo.correct = 1
+			trialinfo.reply_ttc_time = min_ttc - (t-t0)
+
 			update_score(score)
+			trialinfo.score = score
+			trialinfo.n_trials = n_trials
 
 		left.position.x += left_speed * dt
 		right.position.x += right_speed * dt
 		
 		if left.position.x > 0
 			left.position.x = 0
-			return
+			trialdone = 1
 		if right.position.x < 0
 			right.position.x = 0
+			trialdone = 1
+			
+		if trialdone
+			console.log(trialinfo)
 			return
+		
+		
 
 		render()
 
@@ -122,6 +161,9 @@ start_game = ->
 	while true
 		await trial()
 		await new Promise (a) -> setTimeout a, 1000
+
+
+			
 
 window.launch_game = ->
 	await document.body.requestFullscreen()

@@ -14,6 +14,25 @@
 	font-size: x-large;
 }
 
+#endscreen {
+	display: none;
+	
+	position: fixed;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	background-color: black;
+	color: white;
+	z-index: 11;
+	font-size: x-large;
+
+}
+
+#endscreen * {
+	font-size: x-large;
+}
+
 #startscreen * {
 	font-size: x-large;
 }
@@ -38,6 +57,17 @@ body > canvas {
 	<input type="text" id="name" placeholder="Session id or name" />
 	<input type="submit" id="startbutton" value="Start"></button>
 	</form>
+</div>
+
+<div id="endscreen">
+	<div>
+	<div>
+		Done! Total score <span id="endscore"></span>.
+	</div>
+	<form>
+		<input type="submit" value="Restart"></input>
+	</form>
+	</div>
 </div>
 <script type="text/javascript" src="coffeescript.js"></script>
 <script type="text/javascript" src="three.js"></script>
@@ -85,6 +115,9 @@ next_frame = -> new Promise (resolve, reject) ->
 		events = [events_seen...]
 		events_seen = []
 		resolve([time/1000, events])
+
+reset_events = ->
+	events_seen = []
 
 line = new THREE.Line(
 	new THREE.BufferGeometry().setFromPoints([
@@ -150,7 +183,7 @@ trial = ->
 	#	v1 = right_speed
 
 	
-
+	reset_events()
 	while true
 		[time, events] = await next_frame()
 		if not t?
@@ -159,6 +192,9 @@ trial = ->
 		dt = time - t
 		t = time
 		for event in events
+			# Don't accept keypress unless both objects are visible
+			if Math.abs(right.position.x) > 1 or Math.abs(left.position.x) > 1
+				break
 			if score?
 				break
 			if event.key == "ArrowLeft" or event.touches?[0].clientX < event.target.clientWidth/2
@@ -198,7 +234,7 @@ trial = ->
 		render()
 
 start_game = ->
-	while true
+	for i in [0...100]
 		await trial()
 		await new Promise (a) -> setTimeout a, 1000
 
@@ -228,7 +264,12 @@ window.launch_game = ->
 		return
 	document.getElementById("startscreen").remove()
 	await document.body.requestFullscreen()
-	start_game()
+	
+	# Wait a bit before starting
+	await new Promise (a) -> setTimeout a, 3000
+	await start_game()
+	document.getElementById("endscore").innerHTML = Math.round(total_score/n_trials*100)
+	document.getElementById("endscreen").style["display"] = "flex"
 </script>
 
 </body>

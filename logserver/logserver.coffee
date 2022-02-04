@@ -2,10 +2,14 @@
 uuid = require 'uuid'
 fs = require 'fs'
 {promisify} = require 'util'
+
 # TODO:
 # SSL
 # Configurable port
 # More session info from request?
+
+isValidName = (name) ->
+	return /^[ \w_-]*$/.test name
 
 do ->
 	server = new WebSocketServer {port: 8082}
@@ -14,9 +18,13 @@ do ->
 		session_id = uuid.v1()
 		url = new URL request.url, "ws://example.com"
 		session_name = url.searchParams.get("name") ? ""
+		if not isValidName session_id
+			ws.close(1011, JSON.stringify {error: "Invalid session name"})
+			return
 		
 		session_id = session_name + "-" + session_id
 		path = "logs/" + session_id
+		
 		try
 			fd = await promisify(fs.open)(path, "a")
 		catch err

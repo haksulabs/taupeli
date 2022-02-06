@@ -171,7 +171,13 @@ trial = ->
 	t = undefined
 	t0 = undefined
 
-	trialinfo = {v0:left_speed, v1:right_speed, ttcdiff: ttc_diff, minttc:min_ttc}
+	trialinfo =
+		v0: left_speed
+		v1: right_speed
+		x0: left.position.x
+		x1: right.position.x
+		ttcdiff: ttc_diff
+		minttc: min_ttc
 	
 
 
@@ -210,6 +216,7 @@ trial = ->
 			else if side_selected == -Math.sign(ttc_diff)
 				trialinfo.correct = 1
 			trialinfo.reply_ttc_time = min_ttc - (t-t0)
+			trialinfo.reply_time = (t-t0)
 
 			update_score(score)
 			trialinfo.score = score

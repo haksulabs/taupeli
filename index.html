@@ -199,8 +199,8 @@ trial = ->
 		t = time
 		for event in events
 			# Don't accept keypress unless both objects are visible
-			if Math.abs(right.position.x) > 1 or Math.abs(left.position.x) > 1
-				break
+			#if Math.abs(right.position.x) > 1 or Math.abs(left.position.x) > 1
+			#	break
 			if score?
 				break
 			if event.key == "ArrowLeft" or event.touches?[0].clientX < event.target.clientWidth/2
@@ -233,6 +233,11 @@ trial = ->
 			trialdone = 1
 			
 		if trialdone
+			if not score?
+				score = 0
+				update_score(score)
+				trialinfo.score = score
+				trialinfo.n_trials = n_trials
 			logger(trialinfo)
 			return
 		

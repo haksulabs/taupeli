@@ -29,6 +29,15 @@
 
 }
 
+#trialscore {
+	position: fixed;
+	align-items: center;
+	justify-content: center;
+  	bottom: 53%;
+  	right: 53%;
+	color: white
+}
+
 #endscreen * {
 	font-size: x-large;
 }
@@ -52,6 +61,11 @@ body > canvas {
 <div style="position: absolute; font-size: large; color: white;">
 	Score: <span id="score"></span>
 </div>
+
+<div id="trialscore">
+</div>
+
+
 <div id="startscreen">
 	<form onsubmit="launch_game(); return false;">
 	<input type="text" id="name" placeholder="Session id or name" />
@@ -136,6 +150,9 @@ update_score = (score) ->
 	total_score += score
 	n_trials += 1
 	document.getElementById("score").innerHTML = Math.round(total_score/n_trials*100)
+
+display_trial_score = (score) -> 
+	document.getElementById("trialscore").innerHTML = score.toPrecision(2)
 
 trial = ->
 	left.position.x = -1
@@ -239,6 +256,7 @@ trial = ->
 				update_score(score)
 				trialinfo.score = score
 				trialinfo.n_trials = n_trials
+			display_trial_score(score)
 			logger(trialinfo)
 			return
 		
@@ -248,6 +266,7 @@ trial = ->
 
 start_game = ->
 	for i in [0...100]
+		document.getElementById("trialscore").innerHTML = ""
 		await trial()
 		await new Promise (a) -> setTimeout a, 1000
 

@@ -151,7 +151,7 @@ trial = ->
 	left_ttc = Math.abs 1/left_speed
 	right_ttc = Math.abs 1/right_speed
 	
-	ttc_diff = left_ttc - right_ttc
+	ttc_diff = right_ttc - left_ttc
 	###	
 	ttc_diff = Math.random() - 0.5
 	right_delay = ttc_diff + left_ttc - right_ttc

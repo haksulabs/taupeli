@@ -30,12 +30,14 @@
 }
 
 #trialscore {
-	position: fixed;
-	align-items: center;
-	justify-content: center;
-  	bottom: 53%;
-  	right: 53%;
-	color: white
+	position: absolute;
+	display: block;
+  	text-align: center;
+	bottom: 53%;
+	width: 100%;
+	color: white;
+	font-size: large;
+	background-color: black;
 }
 
 #endscreen * {
@@ -130,6 +132,15 @@ next_frame = -> new Promise (resolve, reject) ->
 		events_seen = []
 		resolve([time/1000, events])
 
+pause_rendered = (seconds) ->
+	while true
+		[time, events] = await next_frame()
+		render()
+		if not t0?
+			t0 = time
+		if time - t0 > seconds
+			return
+
 reset_events = ->
 	events_seen = []
 
@@ -144,15 +155,18 @@ scene.add line
 left = new_object()
 right = new_object()
 
+left.position.x = -100
+right.position.x = 100
+
 total_score = 0
 n_trials = 0
 update_score = (score) ->
 	total_score += score
 	n_trials += 1
-	document.getElementById("score").innerHTML = Math.round(total_score/n_trials*100)
+	document.getElementById("score").innerHTML = Math.round(total_score*100)
 
 display_trial_score = (score) -> 
-	document.getElementById("trialscore").innerHTML = score.toPrecision(2)
+	document.getElementById("trialscore").innerHTML = Math.round(score*100)
 
 trial = ->
 	left.position.x = -1
@@ -298,7 +312,7 @@ window.launch_game = ->
 	await document.body.requestFullscreen()
 	
 	# Wait a bit before starting
-	await new Promise (a) -> setTimeout a, 3000
+	await pause_rendered 2
 	await start_game()
 	document.getElementById("endscore").innerHTML = Math.round(total_score/n_trials*100)
 	document.getElementById("endscreen").style["display"] = "flex"

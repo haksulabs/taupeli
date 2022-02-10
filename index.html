@@ -559,9 +559,9 @@ start_game = ->
 	for i in [0...100]
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""
-		#await trial()
+		await trial()
 		#await trial_flash_forced()
-		await trial_flash_nonforced()
+		#await trial_flash_nonforced()
 		await new Promise (a) -> setTimeout a, 1000
 	document.getElementById("trialscore").innerHTML = ""
 	document.getElementById("answerprompt").innerHTML = ""
@@ -585,7 +585,7 @@ get_logger = (name) ->
 window.launch_game = ->
 	name = document.getElementById("name").value
 	try
-		#logger = await get_logger name
+		logger = await get_logger name
 	catch error
 		console.error "Starting logger failed", error
 		alert "Failed to start logging. Retry."

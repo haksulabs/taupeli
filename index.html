@@ -40,6 +40,18 @@
 	background-color: black;
 }
 
+#answerprompt {
+	position: absolute;
+	display: block;
+  	text-align: center;
+	bottom: 70%;
+	width: 100%;
+	color: white;
+	font-size: xx-large;
+	background-color: black;
+
+}
+
 #endscreen * {
 	font-size: x-large;
 }
@@ -66,6 +78,10 @@ body > canvas {
 
 <div id="trialscore">
 </div>
+
+<div id="answerprompt">
+</div>
+
 
 
 <div id="startscreen">
@@ -169,6 +185,7 @@ display_trial_score = (score) ->
 	document.getElementById("trialscore").innerHTML = Math.round(score*100)
 
 trial = ->
+	trialtype = 'base'
 	left.position.x = -1
 	right.position.x = 1
 	
@@ -204,6 +221,7 @@ trial = ->
 	t0 = undefined
 
 	trialinfo =
+		type: trialtype
 		v0: left_speed
 		v1: right_speed
 		x0: left.position.x
@@ -214,12 +232,6 @@ trial = ->
 
 
 	trialdone = 0
-
-	
-	#trialinfo =
-	#	v0 = left_speed
-	#	v1 = right_speed
-
 	
 	reset_events()
 	while true
@@ -274,15 +286,285 @@ trial = ->
 			logger(trialinfo)
 			return
 		
+	
+		render()
+
+
+trial_flash_forced = ->
+	trialtype = 'flash_forced'
+	answertime = 0
+	left.position.x = -1
+	right.position.x = 1
+	
+	left.material.color.setHex 0xffffff
+	right.material.color.setHex 0xffffff
+
+
+	left_speed = (Math.random() + 0.5)*0.5
+	right_speed = -(Math.random() + 0.5)*0.5
+	
+	left_ttc = Math.abs 1/left_speed
+	right_ttc = Math.abs 1/right_speed
+	
+	ttc_diff = right_ttc - left_ttc
+	###	
+	ttc_diff = Math.random() - 0.5
+	right_delay = ttc_diff + left_ttc - right_ttc
+	
+	if right_delay > 0 
+		right.position.x += (right_delay * -right_speed)
+		right_ttc = Math.abs right.position.x / right_speed
+	else
+		left.position.x += right_delay * left_speed
+		left_ttc = Math.abs left.position.x / left_speed
+	###
+	
+	min_ttc = Math.min left_ttc, right_ttc
+	disappearlocation = Math.random()*0.5 + 0.4
+
+	side_selected = 0
+	score = undefined
+
+	t = undefined
+	t0 = undefined
+
+	trialinfo =
+		type: trialtype
+		v0: left_speed
+		v1: right_speed
+		x0: left.position.x
+		x1: right.position.x
+		ttcdiff: ttc_diff
+		minttc: min_ttc
+		disappear: disappearlocation
+
+	
+
+
+	trialdone = 0
+	
+	reset_events()
+	while true
+		[time, events] = await next_frame()
+		if not t?
+			t = time
+			t0 = time
+		dt = time - t
+		t = time
+		for event in events
+			# Don't accept keypress unless both objects are visible
+			#if Math.abs(right.position.x) > 1 or Math.abs(left.position.x) > 1
+			if not answertime
+				break
+			if score?
+				break
+			if event.key == "ArrowLeft" or event.touches?[0].clientX < event.target.clientWidth/2
+				side_selected = -1
+				left.material.color.setHex 0xff00ff
+				trialdone = 1
+			else if event.key == "ArrowRight" or event.touches?[0].clientX > event.target.clientWidth/2
+				side_selected = 1
+				right.material.color.setHex 0xff00ff
+				trialdone = 1
+			else
+				break
+			#score = (min_ttc - (t - t0))/min_ttc
+			score = 1
+			if side_selected == Math.sign(ttc_diff)
+				score *= -2
+				trialinfo.correct = 0
+			else if side_selected == -Math.sign(ttc_diff)
+				trialinfo.correct = 1
+			trialinfo.reply_ttc_time = min_ttc - (t-t0)
+			trialinfo.reply_time = (t-t0)
+
+			update_score(score)
+			trialinfo.score = score
+			trialinfo.n_trials = n_trials
+
+		
+		if left.position.x > 0-disappearlocation || right.position.x < 0+disappearlocation 
+			left.position.x = -100
+			right.position.x = 100
+			left_speed = 0
+			right_speed = 0
+			answertime = 1
+			document.getElementById("answerprompt").innerHTML = 'which one first at the center <br>  &#8678; press an arrow key &#8680; '
+			
+		else
+			left.position.x += left_speed * dt
+			right.position.x += right_speed * dt
 		
 
+
+		if left.position.x > 0
+			left.position.x = 0
+			trialdone = 1
+		if right.position.x < 0
+			right.position.x = 0
+			trialdone = 1
+			
+		if trialdone
+			if not score?
+				score = 0
+				update_score(score)
+				trialinfo.score = score
+				trialinfo.n_trials = n_trials
+			display_trial_score(score)
+			logger(trialinfo)
+			return
+		
+	
 		render()
+
+
+
+trial_flash_nonforced = ->
+	trialtype = 'flash_nonforced'
+	answertime = 0
+	left.position.x = -1
+	right.position.x = 1
+	
+	left.material.color.setHex 0xffffff
+	right.material.color.setHex 0xffffff
+
+
+	left_speed = (Math.random() + 0.5)*0.5
+	right_speed = -(Math.random() + 0.5)*0.5
+	
+	left_ttc = Math.abs 1/left_speed
+	right_ttc = Math.abs 1/right_speed
+	
+	ttc_diff = right_ttc - left_ttc
+	###	
+	ttc_diff = Math.random() - 0.5
+	right_delay = ttc_diff + left_ttc - right_ttc
+	
+	if right_delay > 0 
+		right.position.x += (right_delay * -right_speed)
+		right_ttc = Math.abs right.position.x / right_speed
+	else
+		left.position.x += right_delay * left_speed
+		left_ttc = Math.abs left.position.x / left_speed
+	###
+	
+	min_ttc = Math.min left_ttc, right_ttc
+	disappearlocation = Math.random()*0.5 + 0.4
+
+	side_selected = 0
+	score = undefined
+
+	t = undefined
+	t0 = undefined
+
+	trialinfo =
+		type: trialtype
+		v0: left_speed
+		v1: right_speed
+		x0: left.position.x
+		x1: right.position.x
+		ttcdiff: ttc_diff
+		minttc: min_ttc
+		disappear: disappearlocation
+
+	
+
+
+	trialdone = 0
+	
+	reset_events()
+	while true
+		[time, events] = await next_frame()
+		if not t?
+			t = time
+			t0 = time
+		dt = time - t
+		t = time
+		for event in events
+			# Don't accept keypress unless both objects are visible
+			#if Math.abs(right.position.x) > 1 or Math.abs(left.position.x) > 1
+			if not answertime
+				break
+			if score?
+				break
+			if event.key == "ArrowLeft" or event.touches?[0].clientX < event.target.clientWidth/2
+				side_selected = -1
+				left.material.color.setHex 0xff00ff
+				trialdone = 1
+			else if event.key == "ArrowRight" or event.touches?[0].clientX > event.target.clientWidth/2
+				side_selected = 1
+				right.material.color.setHex 0xff00ff
+				trialdone = 1
+			else if event.key == "ArrowDown" 
+				side_selected = 0
+				right.material.color.setHex 0xff00ff
+				trialdone = 1
+				trialinfo.correct = 2
+				score = 0
+			else
+				break
+			#score = (min_ttc - (t - t0))/min_ttc
+		
+			if side_selected == Math.sign(ttc_diff)
+				score = -2
+				trialinfo.correct = 0
+			else if side_selected == -Math.sign(ttc_diff)
+				trialinfo.correct = 1
+				score = 1
+			trialinfo.reply_ttc_time = min_ttc - (t-t0)
+			trialinfo.reply_time = (t-t0)
+
+			update_score(score)
+			trialinfo.score = score
+			trialinfo.n_trials = n_trials
+
+		
+		if left.position.x > 0-disappearlocation || right.position.x < 0+disappearlocation 
+			left.position.x = -100
+			right.position.x = 100
+			left_speed = 0
+			right_speed = 0
+			answertime = 1
+			document.getElementById("answerprompt").innerHTML = 'which one first at the center <br>  &#8678; press arrow key &#8680; <br> or &#8681; to pass '
+		else
+			left.position.x += left_speed * dt
+			right.position.x += right_speed * dt
+		
+
+
+		if left.position.x > 0
+			left.position.x = 0
+			trialdone = 1
+		if right.position.x < 0
+			right.position.x = 0
+			trialdone = 1
+			
+		if trialdone
+			if not score?
+				score = 0
+				update_score(score)
+				trialinfo.score = score
+				trialinfo.n_trials = n_trials
+			display_trial_score(score)
+			logger(trialinfo)
+			return
+		
+	
+		render()
+
+
+
 
 start_game = ->
 	for i in [0...100]
 		document.getElementById("trialscore").innerHTML = ""
-		await trial()
+		document.getElementById("answerprompt").innerHTML = ""
+		#await trial()
+		#await trial_flash_forced()
+		await trial_flash_nonforced()
 		await new Promise (a) -> setTimeout a, 1000
+	document.getElementById("trialscore").innerHTML = ""
+	document.getElementById("answerprompt").innerHTML = ""
 
 
 
@@ -303,7 +585,7 @@ get_logger = (name) ->
 window.launch_game = ->
 	name = document.getElementById("name").value
 	try
-		logger = await get_logger name
+		#logger = await get_logger name
 	catch error
 		console.error "Starting logger failed", error
 		alert "Failed to start logging. Retry."

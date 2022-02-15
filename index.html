@@ -184,6 +184,11 @@ update_score = (score) ->
 display_trial_score = (score) -> 
 	document.getElementById("trialscore").innerHTML = Math.round(score*100)
 
+get_speeds = ->
+	left_speed = (Math.random()*0.15 + 0.5)
+	right_speed = -(Math.random()*0.15 + 0.5)
+	[left_speed, right_speed]
+
 trial = ->
 	trialtype = 'base'
 	left.position.x = -1
@@ -192,10 +197,8 @@ trial = ->
 	left.material.color.setHex 0xffffff
 	right.material.color.setHex 0xffffff
 
+	[left_speed, right_speed] = get_speeds()
 
-	left_speed = (Math.random() + 0.5)*0.5
-	right_speed = -(Math.random() + 0.5)*0.5
-	
 	left_ttc = Math.abs 1/left_speed
 	right_ttc = Math.abs 1/right_speed
 	
@@ -299,9 +302,7 @@ trial_flash_forced = ->
 	left.material.color.setHex 0xffffff
 	right.material.color.setHex 0xffffff
 
-
-	left_speed = (Math.random() + 0.5)*0.5
-	right_speed = -(Math.random() + 0.5)*0.5
+	[left_speed, right_speed] = get_speeds()
 	
 	left_ttc = Math.abs 1/left_speed
 	right_ttc = Math.abs 1/right_speed
@@ -429,8 +430,7 @@ trial_flash_nonforced = ->
 	right.material.color.setHex 0xffffff
 
 
-	left_speed = (Math.random() + 0.5)*0.5
-	right_speed = -(Math.random() + 0.5)*0.5
+	[left_speed, right_speed] = get_speeds()
 	
 	left_ttc = Math.abs 1/left_speed
 	right_ttc = Math.abs 1/right_speed
@@ -556,6 +556,27 @@ trial_flash_nonforced = ->
 
 
 start_game = ->
+	###
+	for i in [0...100]
+		document.getElementById("trialscore").innerHTML = ""
+		document.getElementById("answerprompt").innerHTML = ""
+		#await trial()
+		await trial_flash_forced()
+		#await trial_flash_nonforced()
+		await new Promise (a) -> setTimeout a, 1000
+	document.getElementById("trialscore").innerHTML = ""
+	document.getElementById("answerprompt").innerHTML = ""
+
+	for i in [0...100]
+		document.getElementById("trialscore").innerHTML = ""
+		document.getElementById("answerprompt").innerHTML = ""
+		#await trial()
+		#await trial_flash_forced()
+		await trial_flash_nonforced()
+		await new Promise (a) -> setTimeout a, 1000
+	document.getElementById("trialscore").innerHTML = ""
+	document.getElementById("answerprompt").innerHTML = ""
+	###
 	for i in [0...100]
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""

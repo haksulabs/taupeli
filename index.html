@@ -68,6 +68,24 @@ body {
 body > canvas {
 	cursor: none;
 }
+
+.instruction {
+	position: fixed;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	background-color: black;
+	color: white;
+	z-index: 10;
+	font-size: large;
+}
+
+.instruction > div {
+	width: 50%;
+}
+
 </style>
 
 </head>
@@ -82,6 +100,36 @@ body > canvas {
 <div id="answerprompt">
 </div>
 
+<div class="instruction" id="forcedinstruction">
+<div>
+<h1>Select critical object</h1>
+<p>Objects appear from left and right and are visible for a moment. Select with
+arrow keys (&#8678; &#8680;) which one is first at the center.</p>
+<p>Right answer gives 100 points, wrong answer -200 points.</p>
+<p>Press any key to continue.</p>
+</div>
+</div>
+
+<div class="instruction" id="nonforcedinstruction">
+<div>
+<h1>Select critical object or pass</h1>
+<p>Objects appear from left and right and are visible for a moment. Select with
+arrow keys (&#8678; &#8680;) which one is first at the center, or pass giving
+and answer by pressing down  &#8681;.</p>
+<p>Right answer gives 100 points, wrong answer -200 points and passing gives 0 points.</p>
+<p>Press any key to continue.</p>
+</div>
+</div>
+
+<div class="instruction" id="trialinstruction">
+<div>
+<h1>Select critical object</h1>
+<p>Objects appear from left and right and approach the center. Select with
+arrow keys (&#8678; &#8680;) which one is first at the center.</p>
+<p>The faster you decide, the more points you get. Wrong answer gives double negative points.</p>
+<p>Press any key to continue.</p>
+</div>
+</div>
 
 
 <div id="startscreen">
@@ -553,11 +601,20 @@ trial_flash_nonforced = ->
 		render()
 
 
-
+show_instruction = (id) ->
+	el = document.getElementById id
+	el.style.display = "flex"
+	new Promise (accept) ->
+		do_accept = ->
+			el.style.display = "none"
+			accept()
+		document.body.addEventListener "keyup", do_accept
+		el.addEventListener "click", do_accept
 
 start_game = ->
-	###
-	for i in [0...100]
+	n_trials = 75
+	await show_instruction "forcedinstruction"
+	for i in [0...n_trials]
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""
 		#await trial()
@@ -566,8 +623,9 @@ start_game = ->
 		await new Promise (a) -> setTimeout a, 1000
 	document.getElementById("trialscore").innerHTML = ""
 	document.getElementById("answerprompt").innerHTML = ""
-
-	for i in [0...100]
+	
+	await show_instruction "nonforcedinstruction"
+	for i in [0...n_trials]
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""
 		#await trial()
@@ -576,8 +634,9 @@ start_game = ->
 		await new Promise (a) -> setTimeout a, 1000
 	document.getElementById("trialscore").innerHTML = ""
 	document.getElementById("answerprompt").innerHTML = ""
-	###
-	for i in [0...100]
+
+	await show_instruction "trialinstruction"
+	for i in [0...n_trials]
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""
 		await trial()
@@ -615,9 +674,10 @@ window.launch_game = ->
 	await document.body.requestFullscreen()
 	
 	# Wait a bit before starting
-	await pause_rendered 2
+	#await pause_rendered 2
 	await start_game()
-	document.getElementById("endscore").innerHTML = Math.round(total_score/n_trials*100)
+	await document.exitFullscreen()
+	document.getElementById("endscore").innerHTML = Math.round(total_score*100)
 	document.getElementById("endscreen").style["display"] = "flex"
 </script>
 

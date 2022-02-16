@@ -92,6 +92,7 @@ body > canvas {
 <body>
 <div style="position: absolute; font-size: large; color: white;">
 	Score: <span id="score"></span>
+	<br>Trial number: <span id="trial_n"</span>
 </div>
 
 <div id="trialscore">
@@ -614,37 +615,43 @@ show_instruction = (id) ->
 		el.addEventListener "click", do_accept
 
 start_game = ->
-	n_trials = 75
+	max_trials = 75
 	await show_instruction "forcedinstruction"
-	for i in [0...n_trials]
+	for i in [0...max_trials]
+		document.getElementById("trial_n").innerHTML = "#{i+1} / #{max_trials}"
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""
 		#await trial()
 		await trial_flash_forced()
 		#await trial_flash_nonforced()
 		await new Promise (a) -> setTimeout a, 1000
+	document.getElementById("trial_n").innerHTML = ""
 	document.getElementById("trialscore").innerHTML = ""
 	document.getElementById("answerprompt").innerHTML = ""
 	
 	await show_instruction "nonforcedinstruction"
-	for i in [0...n_trials]
+	for i in [0...max_trials]
+		document.getElementById("trial_n").innerHTML = "#{i+1} / #{max_trials}"
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""
 		#await trial()
 		#await trial_flash_forced()
 		await trial_flash_nonforced()
 		await new Promise (a) -> setTimeout a, 1000
+	document.getElementById("trial_n").innerHTML = ""
 	document.getElementById("trialscore").innerHTML = ""
 	document.getElementById("answerprompt").innerHTML = ""
 
 	await show_instruction "trialinstruction"
-	for i in [0...n_trials]
+	for i in [0...max_trials]
+		document.getElementById("trial_n").innerHTML = "#{i+1} / #{max_trials}"
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""
 		await trial()
 		#await trial_flash_forced()
 		#await trial_flash_nonforced()
 		await new Promise (a) -> setTimeout a, 1000
+	document.getElementById("trial_n").innerHTML = ""
 	document.getElementById("trialscore").innerHTML = ""
 	document.getElementById("answerprompt").innerHTML = ""
 

@@ -304,6 +304,8 @@ trial = ->
 			else if event.key == "ArrowRight" or event.touches?[0].clientX > event.target.clientWidth/2
 				side_selected = 1
 				right.material.color.setHex 0xff00ff
+			else 
+				break
 			score = (min_ttc - (t - t0))/min_ttc
 			if side_selected == Math.sign(ttc_diff)
 				score *= -2

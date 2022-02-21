@@ -319,6 +319,7 @@ update_score = (score) ->
 display_trial_score = (score) -> 
 	document.getElementById("trialscore").innerHTML = Math.round(score*100)
 
+# TODO: Randomize uniform ttcdiff instead
 get_speeds = ->
 	left_speed = (Math.random()*0.15 + 0.5)
 	right_speed = -(Math.random()*0.15 + 0.5)

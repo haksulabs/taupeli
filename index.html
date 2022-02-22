@@ -242,7 +242,8 @@ arrow keys (&#8678; &#8680;) which one is first at the center.</p>
 <script type="text/coffeescript">
 
 # TODO: dehardcode
-LOG_URL = "wss://taupeli.duckdns.org/log/"
+WS_LOG_URL = "wss://taupeli.duckdns.org/log/"
+POST_LOG_URL = "https://taupeli.duckdns.org/log/"
 
 scene = new THREE.Scene()
 camera = new THREE.OrthographicCamera -1, 1, -1, 1, 0.1, 1000
@@ -798,8 +799,8 @@ start_game = ->
 logger = (msg) ->
 	console.log msg
 
-get_logger = (name) ->
-	url = LOG_URL + "?name=#{name}"
+get_websocket_logger = (name) ->
+	url = WS_LOG_URL + "?name=#{name}"
 	socket = new WebSocket url
 	await new Promise (accept, reject) ->
 		socket.addEventListener "open", -> accept()
@@ -808,6 +809,17 @@ get_logger = (name) ->
 		console.log msg
 		socket.send JSON.stringify msg
 	return lgr
+
+get_logger = (name) ->
+	url = POST_LOG_URL + "?name=#{name}"
+	data = await (await fetch url).json()
+	session_id = data.session_id
+	url = POST_LOG_URL + "?session_id=#{session_id}"
+	lgr = (msg) ->
+		console.log msg
+		fetch url,
+			method: "POST"
+			body: JSON.stringify msg
 
 window.launch_game = ->
 	name = document.getElementById("name").value

@@ -6,6 +6,7 @@ import sys
 import scipy.stats
 import scipy.optimize
 from statsmodels.stats.proportion import proportion_confint
+from numba import njit
 
 def psyfun(x):
     p = 1/(1 + np.exp(-x))
@@ -29,7 +30,7 @@ def tau_estimate(dt, duration, tau0, psi=1/2.0**2, m0=1.0, psi0=1.0):
     return mean, np.sqrt(var)
 """
 
-def tau_estimate(duration, tau0, psi=1/2.0**2, m0=1.0, psi0=1/10**2):
+def tau_estimate_not(duration, tau0, psi=1/2.0**2, m0=1.0, psi0=1/10**2):
     t = duration
     v0 = 0
     mean = m0*psi0 - psi0*t - psi*t**2 + psi*t*tau0
@@ -39,6 +40,30 @@ def tau_estimate(duration, tau0, psi=1/2.0**2, m0=1.0, psi0=1/10**2):
 
     return mean, np.sqrt(var)
 
+dt = 1/100
+@njit
+def tau_estimate(duration, tau, p=1/2.0**2, taupow=0.0, est=1.0, p_est=0.0):
+    t = 0
+    est_var = 0.0
+    speed = 1/tau
+    position = 1
+    p = p*dt
+    while t < duration:
+        t += dt
+        tau -= dt
+        position -= dt*speed
+        obs = np.log(tau)
+        pred = np.log(np.exp(est) - dt)
+        ptau = p/(position**taupow)
+        K = ptau/(ptau + p_est)
+        est = obs*K + (1 - K)*pred
+        p_est += p
+        
+        est_var = K**2*(1/ptau) + (1 - K)**2*est_var
+    
+
+    return est, np.sqrt(est_var)
+
 
 #def correct_probr(intercept, beta_ttcdiff, beta_disappear):
 #    def prob(ttcdiff, disappear):
@@ -47,14 +72,18 @@ def tau_estimate(duration, tau0, psi=1/2.0**2, m0=1.0, psi0=1/10**2):
 #    return prob
 
 # TODO: Slip probability
-def correct_probr(psi, m0=0.25, psi0=0.0):
+def correct_probr(psi, slip=0.01, disteffect=0.0):
     @np.vectorize
     def prob(maxttc, minttc, duration):
-        m_min, s_min = tau_estimate(duration, minttc, psi, m0, psi0)
-        m_max, s_max = tau_estimate(duration, maxttc, psi, m0, psi0)
+        m_min, s_min = tau_estimate(duration, minttc, psi, disteffect)
+        m_max, s_max = tau_estimate(duration, maxttc, psi, disteffect)
         diff = m_min - m_max
         diff_var = s_min**2 + s_max**2
         p = scipy.stats.norm.cdf(0, diff, np.sqrt(diff_var))
+        
+        # Probability of seeing
+        p = (1 - slip)*p + 0.5*slip
+
         return p
     return prob
 
@@ -78,11 +107,17 @@ data['correct'] = data.score > 0
 def loss(p):
     p = np.exp(p)
     probs = correct_probr(*p)(data.maxttc, data.minttc, data.duration)
-    loss = probs*data.correct + (1-probs)*(~data.correct)
-    return -np.sum(np.log(loss))
+    lik = 0.0
+    for i in range(len(probs)):
+        if data.correct.iloc[i]:
+            lik += np.log(probs[i])
+        else:
+            lik += np.log(1 - probs[i])
+    #loss = probs*data.correct + (1-probs)*(~data.correct)
+    #return -np.sum(np.log(loss))
+    return -lik
 
-
-wtf = scipy.optimize.minimize(loss, np.log([1/10**2, 0.25, 1e-9]))
+wtf = scipy.optimize.minimize(loss, np.log([1/0.1**2, 1e-1, 1.0]), method='powell')
 
 wtf.x = np.exp(wtf.x)
 print(wtf)
@@ -90,12 +125,15 @@ std = np.sqrt(1/wtf.x[0])
 print("Std per sec", std)
 probr = correct_probr(*wtf.x)
 
+#param = [1/0.086**2, 1e-1, 1.5]
+#print(loss(np.log(param)))
+#probr = correct_probr(*param)
 minttc = 1.5
 ttcdiffs = np.linspace(0.001, 0.5, 1000)
 maxttc = ttcdiffs + minttc
 disappears = np.linspace(0.4, 0.9, 4)
 
-ttcdiffbins = np.linspace(0, 0.5, 5)
+ttcdiffbins = np.linspace(0, 0.5, 7)
 
 for i, disappear in enumerate(disappears[:-1]):
     s = disappear
@@ -103,7 +141,7 @@ for i, disappear in enumerate(disappears[:-1]):
     d = data[data.disappear.between(s, e)]
     for j in range(len(ttcdiffbins)-1):
         bd = d[d.ttcdiff.abs().between(*ttcdiffbins[[j, j+1]])]
-        n_correct = bd.correct.sum()
+        n_correct = (bd.score > 0).sum()
         x = ttcdiffbins[[j, j+1]].mean()
         x += disappear*0.01
         share = n_correct/len(bd)
@@ -119,6 +157,8 @@ plt.xlabel("TTC difference")
 
 
 plt.legend()
+
+"""
 plt.figure()
 
 #plt.plot
@@ -130,5 +170,5 @@ plt.ylabel("disappear")
 
 plt.figure()
 plt.scatter(data.ttcdiff.abs(), data.correct, alpha=0.2)
-
+"""
 plt.show()

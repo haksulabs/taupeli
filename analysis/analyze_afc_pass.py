@@ -7,6 +7,7 @@ import scipy.stats
 import scipy.optimize
 from scipy.special import logit, expit
 from statsmodels.stats.proportion import proportion_confint
+from numba import njit
 
 rng = np.linspace(-4, 4)
 def tau_estimate(duration, tau0, psi=1/2.0**2, m0=1.0, psi0=0.0):
@@ -24,6 +25,30 @@ def tau_estimate(duration, tau0, psi=1/2.0**2, m0=1.0, psi0=0.0):
     subj_std = np.sqrt(1/subj_prec)
     return mean, np.sqrt(var), subj_std
 
+dt = 1/100
+@njit
+def tau_estimate(duration, tau, p=1/2.0**2, taupow=0.0, est=1.0, p_est=0.0):
+    t = 0
+    est_var = 0.0
+    speed = 1/tau
+    position = 1
+    p = p*dt
+    while t < duration:
+        t += dt
+        tau -= dt
+        position -= dt*speed
+        obs = tau
+        pred = est - dt
+        ptau = p/(tau**taupow)
+        K = ptau/(ptau + p_est)
+        est = obs*K + (1 - K)*pred
+        p_est += p
+        
+        est_var = K**2*(1/ptau) + (1 - K)**2*est_var
+    
+
+    return est, np.sqrt(est_var), np.sqrt(1/p_est)
+
 
 #def correct_probr(intercept, beta_ttcdiff, beta_disappear):
 #    def prob(ttcdiff, disappear):
@@ -32,13 +57,15 @@ def tau_estimate(duration, tau0, psi=1/2.0**2, m0=1.0, psi0=0.0):
 #    return prob
 
 # TODO: Slip probability
-def correct_probr(psi, conf=2/3, m0=0.25, psi0=0.0):
+def correct_probr(psi, conf=2/3, disteffect=0.0):
     @np.vectorize
     def prob(maxttc, minttc, duration):
-        m_min, s_min, subj_std_min = tau_estimate(duration, minttc, psi, m0, psi0)
-        m_max, s_max, subj_std_max = tau_estimate(duration, maxttc, psi, m0, psi0)
+        m_min, s_min, subj_std_min = tau_estimate(duration, minttc, psi, disteffect)
+        m_max, s_max, subj_std_max = tau_estimate(duration, maxttc, psi, disteffect)
         diff = m_min - m_max
         subj_diff_var = subj_std_max**2 + subj_std_min**2
+        #subj_diff_prior = 1**2
+        #subj_diff_var = 1/(1/subj_diff_var + 1/subj_diff_prior)
         #subj_diff_var = s_min**2 + s_max**2
         
         threshold = scipy.stats.norm.ppf(1 - conf, 0, np.sqrt(subj_diff_var))
@@ -84,7 +111,7 @@ def loss(p):
     return -total
 
 
-wtf = scipy.optimize.minimize(loss, [np.log(1/0.1**2), logit(2/3)], method='nelder-mead')
+wtf = scipy.optimize.minimize(loss, [np.log(1/0.1**2), logit(2/3),], method='nelder-mead')
 
 wtf.x[0] = np.exp(wtf.x[0])
 wtf.x[1] = expit(wtf.x[1])
@@ -96,9 +123,9 @@ probr = correct_probr(*wtf.x)
 minttc = 1.5
 ttcdiffs = np.linspace(0.0, 0.5, 1000)
 maxttc = ttcdiffs + minttc
-disappears = np.linspace(0.4, 0.9, 3)
+disappears = np.linspace(0.4, 0.9, 4)
 
-ttcdiffbins = np.linspace(0, 0.5, 10)
+ttcdiffbins = np.linspace(0, 0.5, 7)
 
 for i, disappear in enumerate(disappears[:-1]):
     s = disappear

@@ -52,9 +52,12 @@ def tau_estimate(duration, tau, p=1/2.0**2, taupow=0.0, est=1.0, p_est=0.0):
         t += dt
         tau -= dt
         position -= dt*speed
-        obs = np.log(tau)
-        pred = np.log(np.exp(est) - dt)
-        ptau = p/(position**taupow)
+        #obs = np.log(tau)
+        #pred = np.log(np.exp(est) - dt)
+        obs = -np.exp(-position*taupow)
+        pred = obs
+        #pred = position
+        ptau = p#/(position**taupow)
         K = ptau/(ptau + p_est)
         est = obs*K + (1 - K)*pred
         p_est += p

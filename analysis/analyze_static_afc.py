@@ -20,13 +20,15 @@ maxdiff = 0.1
 min_dur = 1/30
 max_dur = 0.3
 
-
+data = data.query('type == "static_flash_forced"')
+data = data.query('n_trials > 5')
 data['minpos'] = np.minimum(data.x0.abs(), data.x1.abs())
 data['absposdiff'] = data['posdiff'].abs()
 
 def dist_estimate(distance, duration, psi=1.0, scale=1.0):
     t = duration
-    value = -np.exp(-distance*scale)
+    #value = -np.exp(-distance*scale)
+    value = np.arctan(distance*scale)
     mean = value
     var = 1/(psi*t)
 
@@ -74,7 +76,7 @@ plt.legend()
 
 #logreg = smf.logit("correct ~ minpos*absposdiff*duration", data=data).fit()
 
-wtf = scipy.optimize.minimize(loss, np.log([10000.0, 10.0]))
+wtf = scipy.optimize.minimize(loss, np.log([10000.0, 1.0, 0.1]))
 wtf.x = np.exp(wtf.x)
 print(wtf)
 probr = correct_probr(*wtf.x)

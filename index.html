@@ -1135,7 +1135,7 @@ trial_flash_forced_masked_two_and_one = ->
 
 	if Math.random() < 0.5
 	# add to left
-		left1_speed = left_speed + Math.random()*0.4
+		left1_speed = left_speed - Math.random()*0.3
 		left1.position.x = -1
 		if Math.random() < 0.5
 			left1.position.y = 0.1
@@ -1144,7 +1144,7 @@ trial_flash_forced_masked_two_and_one = ->
 			left1.position.y = -0.1
 			left.position.y = 0.1
 	else
-		right1_speed = right_speed - Math.random()*0.4
+		right1_speed = right_speed + Math.random()*0.3
 		right1.position.x = 1
 		if Math.random() < 0.5
 			right1.position.y = 0.1
@@ -1156,7 +1156,7 @@ trial_flash_forced_masked_two_and_one = ->
 	
 	min_ttc = Math.min left_ttc, right_ttc
 	#disappearlocation = Math.random()*0.5 + 0.2
-	disappeartime = Math.random()*0.3+0.3
+	disappeartime = Math.random()*0.4 + 0.4
 	side_selected = 0
 	score = undefined
 

@@ -178,6 +178,26 @@ nuolinäppäimillä (&#8678; &#8680;) kumpi kohde saavuttaisi ruudun keskilinjan
 </div>
 
 
+<div class="instruction" id="corner_instruction">
+<div>
+<h1>TOPELI corner: Select the critical object</h1>
+<p>Objects appear from two neighboring corners, they approach the center and are visible for a moment. Select with
+ which one is faster, i.e. which would be the first to arrive at the center
+(to choose between left and right object, use &#8678; &#8680; to choose between upper or lower object, use &#8679; &#8681;).</p>
+<p>Right answer gives 100 points, wrong answer -200 points.</p>
+<p>Press any key to continue.</p>
+
+<h1>TOPELI kulmat: Valitse kriittinen kohde</h1>
+<p>Kohteet ilmestyvät kahdesta kulmasta ja lähestyvät keskustaa. Ne ovat näkyvissä vain hetken. 
+Valitse kumpi kohde on nopeampi, eli kumpi saavuttaisi keskipisteen ensin.
+(Vastaa nuolinäppäimillä, valitaksesi vasemman ja oikean objektin välillä, käytä &#8678; &#8680;
+Valitaksesi ylemmän ja alemman objektit välillä, käytä &#8679; &#8681;) </p>
+<p>Oikeasta vastauksesta 100 pistettä, Väärästä -200 pistettä.</p>
+<p>Paina jotain näppäintä aloittaaksesi.</p>
+
+</div>
+</div>
+
 
 <div class="instruction" id="nonforcedinstruction">
 <div>
@@ -1615,6 +1635,9 @@ trial_corners_forced = ->
 		v1: right_speed
 		x0: left.position.x
 		x1: right.position.x
+		y0: left.position.y
+		y1: right.position.y
+		cond: condition
 		ttcdiff: ttc_diff
 		minttc: min_ttc
 		disappear: disappeartime
@@ -1720,7 +1743,7 @@ start_game = ->
 	max_trials = 25
 	
 	for b in [0...max_blocks]
-		await show_instruction "forcedinstruction_practice"
+		await show_instruction "corner_instruction"
 		for i in [0...max_trials]
 			document.getElementById("trial_n").innerHTML = "#{i+1} / #{max_trials}"
 			document.getElementById("trialscore").innerHTML = ""

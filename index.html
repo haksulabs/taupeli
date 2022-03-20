@@ -68,6 +68,8 @@ body {
 
 body > canvas {
 	cursor: none;
+	display: block;
+    margin: 0 auto;
 }
 
 .instruction {
@@ -94,8 +96,9 @@ body > canvas {
 </head>
 <body>
 <div style="position: absolute; font-size: large; color: white;">
-	Score: <span id="score"></span>
+	Total score: <span id="score"></span>
 	<br>Trial number: <span id="trial_n"</span>
+	<br>Trial score: <span id="trial_score"</span>
 </div>
 
 <div id="trialscore">
@@ -309,8 +312,12 @@ render = ->
 	el = document.body
 	w = el.clientWidth
 	h = el.clientHeight
-	renderer.setSize w, h
-	h = h/w
+	m = Math.min w,h
+#	renderer.setSize w, h
+	renderer.setSize m, m
+
+#	h = h/w
+	h = 1
 	w = 1
 	camera.left = -w
 	camera.right = w
@@ -491,6 +498,7 @@ get_speeds = ->
 	#	left_speed = (Math.random()*0.15 + 0.5)
 	#	right_speed = -(Math.random()*0.15 + 0.5)
 	[left_speed, right_speed]
+
 
 
 
@@ -1508,6 +1516,194 @@ trial_flash_forced_masked_two_and_one = ->
 	
 		render()
 
+trial_corners_forced = ->
+	trialtype = 'trial_corners_forced'
+	answertime = 0
+	mask.position.y=100
+
+	cond_list = [12,23,34,41]
+	condition = cond_list[Math.floor(Math.random()*cond_list.length)]
+	console.log condition
+
+	[left_speed, right_speed] = get_speeds()
+	right_speed = Math.abs(right_speed)
+
+	switch condition
+		when 12 
+			left.position.x = -1   
+			right.position.x = 1 
+			left.position.y = 1
+			right.position.y = 1
+			left_speed_x = left_speed
+			right_speed_x = -right_speed
+			left_speed_y = -left_speed
+			right_speed_y = -right_speed
+			left_key = "ArrowLeft" 
+			right_key = "ArrowRight"
+		when 23
+			left.position.x = -1   
+			right.position.x = -1 
+			left.position.y = 1
+			right.position.y = -1
+			left_speed_x = left_speed
+			right_speed_x = right_speed
+			left_speed_y = -left_speed
+			right_speed_y = right_speed
+			left_key = "ArrowUp" 
+			right_key = "ArrowDown"
+
+
+		when 34
+			left.position.x = -1   
+			right.position.x = 1 
+			left.position.y = -1
+			right.position.y = -1
+			left_speed_x = left_speed
+			right_speed_x = -right_speed
+			left_speed_y = left_speed
+			right_speed_y = right_speed
+			left_key = "ArrowLeft" 
+			right_key = "ArrowRight"
+
+
+		when 41
+			left.position.x = 1   
+			right.position.x = 1 
+			left.position.y = 1
+			right.position.y = -1
+			left_speed_x = -left_speed
+			right_speed_x = -right_speed
+			left_speed_y = -left_speed
+			right_speed_y = right_speed
+			left_key = "ArrowUp" 
+			right_key = "ArrowDown"
+
+		
+	left.material.color.setHex 0xffffff
+	right.material.color.setHex 0xffffff
+
+	left_ttc = Math.abs (left.position.x)/left_speed
+	right_ttc = Math.abs (right.position.x)/right_speed
+	
+	ttc_diff = right_ttc - left_ttc
+
+	
+	###	
+	ttc_diff = Math.random() - 0.5
+	right_delay = ttc_diff + left_ttc - right_ttc
+	
+	if right_delay > 0 
+		right.position.x += (right_delay * -right_speed)
+		right_ttc = Math.abs right.position.x / right_speed
+	else
+		left.position.x += right_delay * left_speed
+		left_ttc = Math.abs left.position.x / left_speed
+	###
+	
+	min_ttc = Math.min left_ttc, right_ttc
+	#disappearlocation = Math.random()*0.5 + 0.2
+	disappeartime = Math.random()*0.4 + 0.4
+	side_selected = 0
+	score = undefined
+
+	t = undefined
+	t0 = undefined
+
+	trialinfo =
+		type: trialtype
+		v0: left_speed
+		v1: right_speed
+		x0: left.position.x
+		x1: right.position.x
+		ttcdiff: ttc_diff
+		minttc: min_ttc
+		disappear: disappeartime
+
+	
+
+
+	trialdone = 0
+	
+	reset_events()
+	while true
+		[time, events] = await next_frame()
+		if not t?
+			t = time
+			t0 = time
+		dt = time - t
+		t = time
+		for event in events
+			# Don't accept keypress unless both objects are visible
+			#if Math.abs(right.position.x) > 1 or Math.abs(left.position.x) > 1
+			if (not answertime) or (mask.position.y == 0)
+				break
+			if score?
+				break
+			if event.key == left_key or event.touches?[0].clientX < event.target.clientWidth/2
+				side_selected = -1
+				left.material.color.setHex 0xff00ff
+				trialdone = 1
+			else if event.key == right_key or event.touches?[0].clientX > event.target.clientWidth/2
+				side_selected = 1
+				right.material.color.setHex 0xff00ff
+				trialdone = 1
+			else
+				break
+			#score = (min_ttc - (t - t0))/min_ttc
+			score = 1
+			if side_selected == Math.sign(ttc_diff)
+				score *= -2
+				trialinfo.correct = 0
+			else if side_selected == -Math.sign(ttc_diff)
+				trialinfo.correct = 1
+			trialinfo.reply_ttc_time = min_ttc - (t-t0)
+			trialinfo.reply_time = (t-t0)
+
+			update_score(score)
+			trialinfo.score = score
+			trialinfo.n_trials = n_trials
+
+		
+		#if left.position.x > 0-disappearlocation || right.position.x < 0+disappearlocation 
+		if ((t-t0) > disappeartime) and (not answertime)
+			left.position.x = -100
+			right.position.x = 100
+			left_speed = 0
+			right_speed = 0
+			mask.position.y = 0	
+			setTimeout (-> mask.position.y=100 ), 300
+
+			answertime = 1
+			#document.getElementById("answerprompt").innerHTML = 'which side faster <br>  &#8678; press an arrow key &#8680; '
+			
+		else
+			left.position.x += left_speed_x * dt
+			right.position.x += right_speed_x * dt
+			left.position.y += left_speed_y * dt
+			right.position.y += right_speed_y * dt
+		
+
+
+		# if left.position.x > 0
+		# 	left.position.x = 0
+		# 	trialdone = 1
+		# if right.position.x < 0
+		# 	right.position.x = 0
+		# 	trialdone = 1
+			
+		if trialdone
+			if not score?
+				score = 0
+				update_score(score)
+				trialinfo.score = score
+				trialinfo.n_trials = n_trials
+			display_trial_score(score)
+			logger(trialinfo)
+			return
+		
+	
+		render()
+
 
 show_instruction = (id) ->
 	el = document.getElementById id
@@ -1529,7 +1725,8 @@ start_game = ->
 			document.getElementById("trial_n").innerHTML = "#{i+1} / #{max_trials}"
 			document.getElementById("trialscore").innerHTML = ""
 			document.getElementById("answerprompt").innerHTML = ""		
-			await trial_flash_forced_masked_one_and_one()
+			#await trial_flash_forced_masked_one_and_one()
+			await trial_corners_forced()
 			await new Promise (a) -> setTimeout a, 1000
 		document.getElementById("trial_n").innerHTML = ""
 		document.getElementById("trialscore").innerHTML = ""

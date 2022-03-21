@@ -1616,6 +1616,7 @@ trial_corners_forced = ->
 		v1: right_speed
 		x0: left.position.x
 		x1: right.position.x
+		condition: condition
 		ttcdiff: ttc_diff
 		minttc: min_ttc
 		disappear: disappeartime
@@ -1792,6 +1793,7 @@ start_corner_game = ->
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""
 
+		await new Promise (a) -> setTimeout a, 300
 		await trial_corners_forced()
 		await new Promise (a) -> setTimeout a, 1000
 

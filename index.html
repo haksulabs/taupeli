@@ -36,8 +36,9 @@
 	bottom: 53%;
 	width: 100%;
 	color: white;
-	font-size: large;
-	background-color: black;
+	font-size: xx-large;
+	text-shadow: 2px 2px 3px black;
+	/*background-color: black;*/
 }
 
 #answerprompt {
@@ -387,7 +388,7 @@ noise_material = ->
 	return mat
 
 new_object = ->
-	geometry = new THREE.SphereGeometry(0.02, 32, 16)
+	geometry = new THREE.SphereGeometry(0.03, 32, 16)
 	#material = new THREE.MeshBasicMaterial color: 0xffffff
 	material = noise_material()
 	object = new THREE.Mesh geometry, material
@@ -1725,8 +1726,8 @@ start_game = ->
 			document.getElementById("trial_n").innerHTML = "#{i+1} / #{max_trials}"
 			document.getElementById("trialscore").innerHTML = ""
 			document.getElementById("answerprompt").innerHTML = ""		
-			#await trial_flash_forced_masked_one_and_one()
-			await trial_corners_forced()
+			await trial_flash_forced_masked_one_and_one()
+			#await trial_corners_forced()
 			await new Promise (a) -> setTimeout a, 1000
 		document.getElementById("trial_n").innerHTML = ""
 		document.getElementById("trialscore").innerHTML = ""
@@ -1785,6 +1786,19 @@ start_static_game = ->
 	document.getElementById("trialscore").innerHTML = ""
 	document.getElementById("answerprompt").innerHTML = ""
 
+start_corner_game = ->
+	#await show_instruction "forcedstaticinstruction"
+	for i in [0...250]
+		document.getElementById("trialscore").innerHTML = ""
+		document.getElementById("answerprompt").innerHTML = ""
+
+		await trial_corners_forced()
+		await new Promise (a) -> setTimeout a, 1000
+
+	document.getElementById("trialscore").innerHTML = ""
+	document.getElementById("answerprompt").innerHTML = ""
+
+
 
 logger = (msg) ->
 	console.log msg
@@ -1827,6 +1841,8 @@ window.launch_game = ->
 	#await pause_rendered 2
 	if url.searchParams.get("game") == "static_forced"
 		await start_static_game()
+	else if url.searchParams.get("game") == "corners"
+		await start_corner_game()
 	else
 		await start_game()
 	await document.exitFullscreen()

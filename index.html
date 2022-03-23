@@ -29,16 +29,25 @@
 
 }
 
-#trialscore {
+#trialscore_wrapper {
 	position: absolute;
 	display: block;
   	text-align: center;
-	bottom: 53%;
+	top: 30%;
 	width: 100%;
 	color: white;
 	font-size: xx-large;
 	text-shadow: 2px 2px 3px black;
 	/*background-color: black;*/
+}
+
+#trialscore {
+	background-color: black;
+	padding: 3px;
+}
+
+#trialscore:empty {
+	display: none;
 }
 
 #answerprompt {
@@ -102,7 +111,8 @@ body > canvas {
 	<br>Trial score: <span id="trial_score"</span>
 </div>
 
-<div id="trialscore">
+<div id="trialscore_wrapper">
+<span id="trialscore"></span>
 </div>
 
 <div id="answerprompt">
@@ -233,6 +243,22 @@ arrow keys (&#8678; &#8680;) which one is first at the center.</p>
 
 <h1>TOPELI 1: Valitse kriittinen kohde </h1>
 <p>Kohteet tulevat vasemmalta ja oikealta ja lähestyvät keskilinjaa. Valitse nuolinäppäimillä (&#8678; &#8680;) kumpi kohde saavuttaa keskilinjan ensin. </p>
+<p>Nopeammasta vastauksesta saa enemmän pisteitä. Väärästä vastauksesta saa kaksinkertaisen määrän miinuspisteitä.</p>
+<p>Paina jotain näppäintä aloittaaksesi.</p>
+
+</div>
+</div>
+
+<div class="instruction" id="trialinstruction_multi">
+<div>
+<h1>Select the critical object</h1>
+<p>Objects appear from left and right and approach the center. Select with
+arrow keys (&#8678; &#8680;) from which side one is first at the center.</p>
+<p>The faster you decide, the more points you get. Wrong answer gives double negative points.</p>
+<p>Press any key to continue.</p>
+
+<h1>Valitse kriittinen kohde</h1>
+<p>Kohteet tulevat vasemmalta ja oikealta ja lähestyvät keskilinjaa. Valitse nuolinäppäimillä (&#8678; &#8680;) kummalla puolella kohde saavuttaa keskilinjan ensin. </p>
 <p>Nopeammasta vastauksesta saa enemmän pisteitä. Väärästä vastauksesta saa kaksinkertaisen määrän miinuspisteitä.</p>
 <p>Paina jotain näppäintä aloittaaksesi.</p>
 
@@ -607,6 +633,265 @@ trial = ->
 		
 	
 		render()
+`
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+`
+
+trial_n_and_n = (left_n, right_n) ->
+	[left_speed, right_speed] = get_speeds()
+
+	left_ttc = Math.abs 1/left_speed
+	right_ttc = Math.abs 1/right_speed
+	ttc_diff = right_ttc - left_ttc
+	min_ttc = Math.min left_ttc, right_ttc
+
+	left_primary = new_object()
+	left_primary.position.x = -1
+	left_primary.speed = left_speed
+	left_primary.ttc = -left_primary.position.x/left_speed
+
+	right_primary = new_object()
+	right_primary.position.x = 1
+	right_primary.speed = right_speed
+	right_primary.ttc = -right_primary.position.x/right_speed
+	
+	object_separation = 0.2
+	left_ys = for i in [0...left_n]
+		(i - (left_n - 1)/2)*object_separation
+	shuffleArray left_ys
+	
+	left_primary.position.y = left_ys[0]
+	left_objects = [left_primary]
+	for i in [1...left_n]
+		obj = new_object()
+		obj.position.x = -1
+		obj.position.y = left_ys[i]
+		obj.speed = left_speed - Math.random()*0.3
+		left_objects.push obj
+
+	right_ys = for i in [0...right_n]
+		(i - (right_n - 1)/2)*object_separation
+	shuffleArray right_ys
+	
+	right_primary.position.y = right_ys[0]
+	right_objects = [right_primary]
+	for i in [1...right_n]
+		obj = new_object()
+		obj.position.x = 1
+		obj.position.y = right_ys[i]
+		obj.speed = right_speed + Math.random()*0.3
+		right_objects.push obj
+	
+	objects = left_objects.concat right_objects
+
+	trialdone = 0
+	trialinfo =
+		type: "base_n_by_n"
+		left_n: left_n
+		right_n: right_n
+		ttc_diff: ttc_diff
+		min_ttc: min_ttc
+		objects: for obj in objects
+			x: obj.position.x
+			y: obj.position.y
+			speed: obj.speed
+	
+	reset_events()
+	time0 = undefined
+	while true
+		[time, events] = await next_frame()
+		if not time0?
+			time0 = time
+			prev_t = time - time0
+		t = time - time0
+		dt = t - prev_t
+		prev_t = t
+
+		for event in events
+			if score?
+				break
+			if event.key == "ArrowLeft" or event.touches?[0].clientX < event.target.clientWidth/2
+				side_selected = -1
+				for obj in left_objects
+					obj.material.color.setHex 0xff00ff
+			else if event.key == "ArrowRight" or event.touches?[0].clientX > event.target.clientWidth/2
+				side_selected = 1
+				for obj in right_objects
+					obj.material.color.setHex 0xff00ff
+			else 
+				break
+			score = (min_ttc - t)/min_ttc
+			if side_selected == Math.sign(ttc_diff)
+				score *= -2
+				trialinfo.correct = 0
+			else if side_selected == -Math.sign(ttc_diff)
+				trialinfo.correct = 1
+
+			trialinfo.side_selected = side_selected
+			trialinfo.reply_ttc_time = min_ttc - t
+			trialinfo.reply_time = t
+			
+			update_score(score)
+			trialinfo.score = score
+			trialinfo.n_trials = n_trials
+
+		for obj in objects
+			obj.position.x += obj.speed*dt
+		
+		if left_primary.position.x > 0 or right_primary.position.x < 0
+			trialdone = 1
+
+		if trialdone
+			if not score?
+				score = 0
+				update_score score
+				trialinfo.score = score
+				trialinfo.n_trials = n_trials
+			display_trial_score score
+			logger trialinfo
+			break
+
+		render()
+	
+	for obj in objects
+		scene.remove obj
+
+
+trial_two_and_one = ->
+	trialtype = 'base_two_and_one'
+	answertime = 0
+	mask.position.y=100
+
+	left.position.x = -1   
+	right.position.x = 1 
+	left.position.y = 0
+	right.position.y = 0
+	
+	left.material.color.setHex 0xffffff
+	right.material.color.setHex 0xffffff
+	left1.material.color.setHex 0xffffff
+	right1.material.color.setHex 0xffffff
+
+	[left_speed, right_speed] = get_speeds()
+
+		
+	left_ttc = Math.abs (left.position.x)/left_speed
+	right_ttc = Math.abs (right.position.x)/right_speed
+	
+	ttc_diff = right_ttc - left_ttc
+
+
+
+	if Math.random() < 0.5
+	# add extra ball
+		left1_speed = left_speed - Math.random()*0.3
+		left1.position.x = -1
+		if Math.random() < 0.5
+			left1.position.y = 0.1
+			left.position.y = -0.1
+		else
+			left1.position.y = -0.1
+			left.position.y = 0.1
+	else
+		right1_speed = right_speed + Math.random()*0.3
+		right1.position.x = 1
+		if Math.random() < 0.5
+			right1.position.y = 0.1
+			right.position.y = -0.1
+		else
+			right1.position.y = -0.1
+			right.position.y = 0.1
+
+	
+	min_ttc = Math.min left_ttc, right_ttc
+	side_selected = 0
+	score = undefined
+
+	t = undefined
+	t0 = undefined
+
+	trialinfo =
+		type: trialtype
+		v0: left_speed
+		v1: right_speed
+		x0: left.position.x
+		x1: right.position.x
+		v2: left1_speed
+		x2: left1.position.x
+		v3: right1_speed
+		x3: right1.position.x
+		y2: left1.position.y
+		y3: right1.position.y
+	
+		ttcdiff: ttc_diff
+		minttc: min_ttc
+
+
+	trialdone = 0
+	reset_events()
+	while true
+		[time, events] = await next_frame()
+		if not t?
+			t = time
+			t0 = time
+		dt = time - t
+		t = time
+		for event in events
+			if score?
+				break
+			if event.key == "ArrowLeft" or event.touches?[0].clientX < event.target.clientWidth/2
+				side_selected = -1
+				left.material.color.setHex 0xff00ff
+				left1.material.color.setHex 0xff00ff
+			else if event.key == "ArrowRight" or event.touches?[0].clientX > event.target.clientWidth/2
+				side_selected = 1
+				right.material.color.setHex 0xff00ff
+				right1.material.color.setHex 0xff00ff
+			else
+				break
+			score = (min_ttc - (t - t0))/min_ttc
+			if side_selected == Math.sign(ttc_diff)
+				score *= -2
+				trialinfo.correct = 0
+			else if side_selected == -Math.sign(ttc_diff)
+				trialinfo.correct = 1
+			trialinfo.reply_ttc_time = min_ttc - (t-t0)
+			trialinfo.reply_time = (t-t0)
+
+			update_score(score)
+			trialinfo.score = score
+			trialinfo.n_trials = n_trials
+		
+		left.position.x += left_speed * dt
+		left1.position.x += left1_speed * dt
+		right.position.x += right_speed * dt
+		right1.position.x += right1_speed * dt
+		
+		if left.position.x > 0
+			left.position.x = 0
+			trialdone = 1
+		if right.position.x < 0
+			right.position.x = 0
+			trialdone = 1
+			
+		if trialdone
+			if not score?
+				score = 0
+				update_score(score)
+				trialinfo.score = score
+				trialinfo.n_trials = n_trials
+			display_trial_score(score)
+			logger(trialinfo)
+			return
+		
+	
+		render()
+
 
 
 trial_flash_forced = ->
@@ -1800,6 +2085,24 @@ start_corner_game = ->
 	document.getElementById("trialscore").innerHTML = ""
 	document.getElementById("answerprompt").innerHTML = ""
 
+start_timed_game = ->
+	for j in [0...3]
+		await show_instruction "trialinstruction_multi"
+		for i in [0...100]
+			document.getElementById("trialscore").innerHTML = ""
+			document.getElementById("answerprompt").innerHTML = ""
+
+
+			await new Promise (a) -> setTimeout a, 300
+			await trial_n_and_n(
+				Math.round(Math.random()) + 1,
+				Math.round(Math.random()) + 1
+				)
+			await new Promise (a) -> setTimeout a, 1000
+		
+		document.getElementById("trialscore").innerHTML = ""
+		document.getElementById("answerprompt").innerHTML = ""
+
 
 
 logger = (msg) ->
@@ -1841,12 +2144,12 @@ window.launch_game = ->
 	url = (new URL window.location.href)
 	# Wait a bit before starting
 	#await pause_rendered 2
-	if url.searchParams.get("game") == "static_forced"
-		await start_static_game()
-	else if url.searchParams.get("game") == "corners"
-		await start_corner_game()
-	else
-		await start_game()
+	switch url.searchParams.get("game")
+		when "static_forced" then await start_static_game()
+		when "corners" then await start_corner_game()
+		when "timed" then await start_timed_game()
+		else await start_game()
+	
 	await document.exitFullscreen()
 	document.getElementById("endscore").innerHTML = Math.round(total_score)
 	document.getElementById("endscreen").style["display"] = "flex"

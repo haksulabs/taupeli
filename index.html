@@ -2086,7 +2086,7 @@ start_corner_game = ->
 	document.getElementById("answerprompt").innerHTML = ""
 
 start_timed_game = ->
-	for j in [0...3]
+	for j in [0...5]
 		await show_instruction "trialinstruction_multi"
 		for i in [0...100]
 			document.getElementById("trialscore").innerHTML = ""
@@ -2095,8 +2095,8 @@ start_timed_game = ->
 
 			await new Promise (a) -> setTimeout a, 300
 			await trial_n_and_n(
-				Math.round(Math.random()) + 1,
-				Math.round(Math.random()) + 1
+				Math.round(Math.random()*2) + 1,
+				Math.round(Math.random()*2) + 1
 				)
 			await new Promise (a) -> setTimeout a, 1000
 		

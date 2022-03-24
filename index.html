@@ -357,6 +357,7 @@ NoiseMaterial = new THREE.ShaderMaterial
 	transparent: true
 	uniforms:
 		color: new THREE.Uniform new THREE.Color()
+		seed: {'value': 0.0}
 
 	vertexShader: """
 	varying vec2 vUv;
@@ -376,6 +377,7 @@ NoiseMaterial = new THREE.ShaderMaterial
 	varying vec3 local_position;
 	varying vec2 vUv;
 	uniform vec3 color;
+	uniform float seed;
 	float rand(vec2 co){
     		return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
 	}
@@ -399,7 +401,7 @@ NoiseMaterial = new THREE.ShaderMaterial
 
 	void main() {
 		//float value = rand(round(vUv*10.0));
-		vec2 pos = vec2(local_position.x, local_position.y);
+		vec2 pos = vec2(local_position.x + seed, local_position.y + seed);
 		float value = rand(round(pos*500.0)/500.0);
 		
 		vec3 hsv = rgb2hsv(color);
@@ -495,6 +497,7 @@ update_score = (score) ->
 	document.getElementById("score").innerHTML = Math.round(total_score)
 
 display_trial_score = (score) -> 
+	background.material.uniforms.seed.value = n_trials
 	document.getElementById("trialscore").innerHTML = Math.round(score*100)
 
 
@@ -2093,12 +2096,14 @@ start_timed_game = ->
 			document.getElementById("answerprompt").innerHTML = ""
 
 
-			await new Promise (a) -> setTimeout a, 300
+			#await new Promise (a) -> setTimeout a, 300
+			await pause_rendered 0.3
 			await trial_n_and_n(
 				Math.round(Math.random()*2) + 1,
 				Math.round(Math.random()*2) + 1
 				)
 			await new Promise (a) -> setTimeout a, 1000
+			#await pause_rendered 1.0
 		
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""

@@ -97,15 +97,21 @@ data = pd.DataFrame.from_records(data)
 data['ttc0'] = np.abs(1.0/data.v0)
 data['ttc1'] = np.abs(1.0/data.v1)
 
-data['maxttc'] = np.maximum(data.ttc0, data.ttc1)
-data['minttc'] = np.minimum(data.ttc0, data.ttc1)
-data['duration'] = (1 - data['disappear'])/(1/data.maxttc)
+data['maxttc'] = np.max(data[['ttc0', 'ttc1']].values, axis=1)
+data['minttc'] = np.min(data[['ttc0', 'ttc1']].values, axis=1)
+
+print(data.columns)
+#data['duration'] = (1 - data['disappear'])/(1/data.maxttc)
+data['duration'] = data['disappear']
+data['disappear'] = 1 - data['duration']*(1/data.minttc)
+#(1 - data['disappear'])/(1/data.maxttc)
 
 #data['maxspeed'] = np.maximum(data.v0, data.v1)
 
-data = data.query("type == 'flash_forced'")
+data = data.query("type == 'flash_forced_masked_one_and_one'")
 data = data[data.n_trials > 25]
 data['correct'] = data.score > 0
+
 
 def loss(p):
     p = np.exp(p)
@@ -134,23 +140,26 @@ probr = correct_probr(*wtf.x)
 minttc = 1.5
 ttcdiffs = np.linspace(0.001, 0.5, 1000)
 maxttc = ttcdiffs + minttc
-disappears = np.linspace(0.4, 0.9, 4)
+durations = np.linspace(0.4, 0.8, 4)
 
-ttcdiffbins = np.linspace(0, 0.5, 7)
+ttcdiffbins = np.linspace(0, 0.5, 5)
 
-for i, disappear in enumerate(disappears[:-1]):
-    s = disappear
-    e = disappears[i+1]
-    d = data[data.disappear.between(s, e)]
+plt.hist(data.duration)
+plt.show()
+
+for i, duration in enumerate(durations[:-1]):
+    s = duration
+    e = durations[i+1]
+    d = data[data.duration.between(s, e)]
     for j in range(len(ttcdiffbins)-1):
         bd = d[d.ttcdiff.abs().between(*ttcdiffbins[[j, j+1]])]
         n_correct = (bd.score > 0).sum()
         x = ttcdiffbins[[j, j+1]].mean()
-        x += disappear*0.01
+        x += duration*0.01
         share = n_correct/len(bd)
         low, high = proportion_confint(n_correct, len(bd), method='beta')
         plt.errorbar(x, share, [[share-low], [high-share]], fmt='o', color=f"C{i}")
-    plt.plot(ttcdiffs, probr(maxttc, minttc, (1 - disappear)/(1/maxttc)), label=f"Disappear {disappear:.2f}", color=f"C{i}")
+    plt.plot(ttcdiffs, probr(maxttc, minttc, duration), label=f"Duration {duration:.2f}", color=f"C{i}")
 plt.ylabel("Share correct")
 plt.xlabel("TTC difference")
 

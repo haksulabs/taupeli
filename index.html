@@ -31,10 +31,13 @@
 
 #trialscore_wrapper {
 	position: absolute;
-	display: block;
+	display: flex;
   	text-align: center;
-	top: 30%;
 	width: 100%;
+	height: 100%;
+	align-content: center;
+	justify-content: center;
+	align-items: center;
 	color: white;
 	font-size: xx-large;
 	text-shadow: 2px 2px 3px black;
@@ -2086,6 +2089,15 @@ start_static_game = ->
 	document.getElementById("answerprompt").innerHTML = ""
 
 start_corner_game = ->
+	vline = new THREE.Line(
+		new THREE.BufferGeometry().setFromPoints([
+			new THREE.Vector3(-1, 0, 0),
+			new THREE.Vector3(1, 0, 0)
+			]),
+		new THREE.LineBasicMaterial
+			linewidth: 3
+	)
+	scene.add vline
 	#await show_instruction "forcedstaticinstruction"
 	for i in [0...250]
 		document.getElementById("trialscore").innerHTML = ""

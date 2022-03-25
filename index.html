@@ -2091,7 +2091,8 @@ start_corner_game = ->
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""
 
-		await new Promise (a) -> setTimeout a, 300
+		#await new Promise (a) -> setTimeout a, 300
+		await pause_rendered 0.3
 		await trial_corners_forced()
 		await new Promise (a) -> setTimeout a, 1000
 

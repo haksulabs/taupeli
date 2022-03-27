@@ -542,6 +542,33 @@ get_speeds = ->
 	#	right_speed = -(Math.random()*0.15 + 0.5)
 	[left_speed, right_speed]
 
+get_speeds_2 = ->
+
+	# Randomize uniform ttcdiff 
+
+	abs_max_ttc_diff = 0.4
+
+	min_speed = 0.4
+	max_speed = 1.0
+	
+	abs_ttc_diff = Math.random()*abs_max_ttc_diff+0.05
+	
+	min_t = 1/max_speed
+	max_t = 1/min_speed
+
+	ttc_0 = Math.random() * ((max_t-abs_ttc_diff) - min_t) + min_t
+	ttc_1 = ttc_0 + abs_ttc_diff
+	
+	if Math.random() < 0.5
+		left_speed = 1/ttc_0
+		right_speed = -1/ttc_1
+	else
+		left_speed = 1/ttc_1
+		right_speed = -1/ttc_0
+
+	#	left_speed = (Math.random()*0.15 + 0.5)
+	#	right_speed = -(Math.random()*0.15 + 0.5)
+	[left_speed, right_speed]
 
 
 
@@ -793,7 +820,7 @@ trial_two_and_one = ->
 	left1.material.color.setHex 0xffffff
 	right1.material.color.setHex 0xffffff
 
-	[left_speed, right_speed] = get_speeds()
+	[left_speed, right_speed] = get_speeds_2()
 
 		
 	left_ttc = Math.abs (left.position.x)/left_speed
@@ -1662,8 +1689,8 @@ trial_flash_forced_masked_one_and_one = ->
 		render()
 
 
-trial_flash_forced_masked_two_and_one = ->
-	trialtype = 'flash_forced_masked_two_and_one'
+trial_flash_forced_two_and_one = ->
+	trialtype = 'flash_forced_two_and_one'
 	answertime = 0
 	mask.position.y=100
 
@@ -1675,7 +1702,7 @@ trial_flash_forced_masked_two_and_one = ->
 	left.material.color.setHex 0xffffff
 	right.material.color.setHex 0xffffff
 
-	[left_speed, right_speed] = get_speeds()
+	[left_speed, right_speed] = get_speeds_2()
 
 		
 	left_ttc = Math.abs (left.position.x)/left_speed
@@ -1684,10 +1711,14 @@ trial_flash_forced_masked_two_and_one = ->
 	ttc_diff = right_ttc - left_ttc
 
 
+	if Math.random() < 0.3
+		extra_speed = 0
+	else
+		extra_speed = Math.random()*0.3
 
 	if Math.random() < 0.5
 	# add extra ball
-		left1_speed = left_speed - Math.random()*0.3
+		left1_speed = left_speed - extra_speed
 		left1.position.x = -1
 		if Math.random() < 0.5
 			left1.position.y = 0.1
@@ -1696,7 +1727,7 @@ trial_flash_forced_masked_two_and_one = ->
 			left1.position.y = -0.1
 			left.position.y = 0.1
 	else
-		right1_speed = right_speed + Math.random()*0.3
+		right1_speed = right_speed + extra_speed
 		right1.position.x = 1
 		if Math.random() < 0.5
 			right1.position.y = 0.1
@@ -1708,7 +1739,7 @@ trial_flash_forced_masked_two_and_one = ->
 	
 	min_ttc = Math.min left_ttc, right_ttc
 	#disappearlocation = Math.random()*0.5 + 0.2
-	disappeartime = Math.random()*0.4 + 0.4
+	disappeartime = 0.5
 	side_selected = 0
 	score = undefined
 
@@ -1727,6 +1758,7 @@ trial_flash_forced_masked_two_and_one = ->
 		x3: right1.position.x
 		y2: left1.position.y
 		y3: right1.position.y
+		extra_speed : extra_speed
 	
 		ttcdiff: ttc_diff
 		minttc: min_ttc
@@ -1745,7 +1777,8 @@ trial_flash_forced_masked_two_and_one = ->
 		for event in events
 			# Don't accept keypress unless both objects are visible
 			#if Math.abs(right.position.x) > 1 or Math.abs(left.position.x) > 1
-			if (not answertime) or (mask.position.y == 0)
+			#if (not answertime) or (mask.position.y == 0)
+			if not answertime 
 				break
 			if score?
 				break
@@ -1762,7 +1795,8 @@ trial_flash_forced_masked_two_and_one = ->
 			#score = (min_ttc - (t - t0))/min_ttc
 			score = 1
 			if side_selected == Math.sign(ttc_diff)
-				score *= -2
+				#score *= -2
+				score = 0
 				trialinfo.correct = 0
 			else if side_selected == -Math.sign(ttc_diff)
 				trialinfo.correct = 1
@@ -1772,9 +1806,7 @@ trial_flash_forced_masked_two_and_one = ->
 			update_score(score)
 			trialinfo.score = score
 			trialinfo.n_trials = n_trials
-
-		
-		#if left.position.x > 0-disappearlocation || right.position.x < 0+disappearlocation
+	
 		if ((t-t0) > disappeartime) and (not answertime)
 			left.position.x = -100
 			right.position.x = 100
@@ -1784,11 +1816,11 @@ trial_flash_forced_masked_two_and_one = ->
 			right_speed = 0
 			left1_speed = 0
 			right1_speed = 0
-			mask.position.y = 0	
-			setTimeout (-> mask.position.y=100 ), 300
+			#mask.position.y = 0	
+			#setTimeout (-> mask.position.y=100 ), 300
 
 			answertime = 1
-			document.getElementById("answerprompt").innerHTML = 'which side faster <br>  &#8678; press an arrow key &#8680; '
+			#document.getElementById("answerprompt").innerHTML = 'which side faster <br>  &#8678; press an arrow key &#8680; '
 			
 		else
 			left.position.x += left_speed * dt
@@ -1938,7 +1970,8 @@ trial_corners_forced = ->
 		for event in events
 			# Don't accept keypress unless both objects are visible
 			#if Math.abs(right.position.x) > 1 or Math.abs(left.position.x) > 1
-			if (not answertime) or (mask.position.y == 0)
+			#if (not answertime) or (mask.position.y == 0)
+			if not answertime
 				break
 			if score?
 				break
@@ -2074,7 +2107,21 @@ start_game = ->
 		document.getElementById("trial_n").innerHTML = ""
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""
-			
+
+start_forced_game = ->
+	await show_instruction "forced_two_and_one_instruction"
+	max_trials = 100
+	for i in [0...max_trials]
+		document.getElementById("trial_n").innerHTML = "#{i+1} / #{max_trials}"
+		document.getElementById("trialscore").innerHTML = ""
+		document.getElementById("answerprompt").innerHTML = ""
+		await trial_flash_forced_two_and_one()
+		
+		await new Promise (a) -> setTimeout a, 1000
+	document.getElementById("trial_n").innerHTML = ""
+	document.getElementById("trialscore").innerHTML = ""
+	document.getElementById("answerprompt").innerHTML = ""
+		
 
 start_static_game = ->
 	await show_instruction "forcedstaticinstruction"
@@ -2176,6 +2223,7 @@ window.launch_game = ->
 		when "static_forced" then await start_static_game()
 		when "corners" then await start_corner_game()
 		when "timed" then await start_timed_game()
+		when "forced" then await start_forced_game()
 		else await start_game()
 	
 	await document.exitFullscreen()

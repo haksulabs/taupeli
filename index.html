@@ -2217,8 +2217,6 @@ window.launch_game = ->
 	await document.body.requestFullscreen()
 
 	url = (new URL window.location.href)
-	# Wait a bit before starting
-	#await pause_rendered 2
 	switch url.searchParams.get("game")
 		when "static_forced" then await start_static_game()
 		when "corners" then await start_corner_game()

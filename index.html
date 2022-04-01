@@ -805,6 +805,31 @@ trial_n_and_n = (left_n, right_n, n_lanes) ->
 	for obj in objects
 		scene.remove obj
 
+randint = (low, high) ->
+	return Math.floor(Math.random()*(high - low) + low)
+
+# Draw two numbers a, b so that 1 <= a <= n and 1 <= b <= n and
+# a + b is uniformly distributed on range 2 to 2*n
+draw_n_and_n = (n) ->
+	maxextra = (n - 1)*2
+	nextra = randint(0, maxextra + 1)
+	nleft = 1
+	nright = 1
+	while true
+		if nextra == 0
+			break
+		if nleft == n
+			nright += nextra
+			break
+		if nright == n
+			nleft += nextra
+		left = Math.random() < 0.5
+		if left
+			nleft += 1
+		else
+			nright += 1
+		nextra -= 1
+	return [nleft, nright]
 
 trial_two_and_one = ->
 	trialtype = 'base_two_and_one'
@@ -2169,11 +2194,9 @@ start_timed_game = ->
 
 			#await new Promise (a) -> setTimeout a, 300
 			await pause_rendered 0.3
-			await trial_n_and_n(
-				Math.round(Math.random()*2) + 1,
-				Math.round(Math.random()*2) + 1,
-				3
-				)
+			[left_n, right_n] = draw_n_and_n 3
+			console.log left_n, right_n
+			await trial_n_and_n left_n, right_n, 3
 			await new Promise (a) -> setTimeout a, 1000
 			#await pause_rendered 1.0
 		

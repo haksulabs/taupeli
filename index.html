@@ -1881,7 +1881,7 @@ trial_corners_forced = ->
 	answertime = 0
 	mask.position.y=100
 
-	cond_list = [12,23,34,41]
+	cond_list = [12,23,34,41,13,24]
 	condition = cond_list[Math.floor(Math.random()*cond_list.length)]
 	console.log condition
 
@@ -1898,8 +1898,8 @@ trial_corners_forced = ->
 			right_speed_x = -right_speed
 			left_speed_y = -left_speed
 			right_speed_y = -right_speed
-			left_key = "ArrowLeft" 
-			right_key = "ArrowRight"
+			left_key = ["ArrowLeft"]
+			right_key = ["ArrowRight"]
 		when 23
 			left.position.x = -1   
 			right.position.x = -1 
@@ -1909,8 +1909,8 @@ trial_corners_forced = ->
 			right_speed_x = right_speed
 			left_speed_y = -left_speed
 			right_speed_y = right_speed
-			left_key = "ArrowUp" 
-			right_key = "ArrowDown"
+			left_key = ["ArrowUp"]
+			right_key = ["ArrowDown"]
 
 
 		when 34
@@ -1922,8 +1922,8 @@ trial_corners_forced = ->
 			right_speed_x = -right_speed
 			left_speed_y = left_speed
 			right_speed_y = right_speed
-			left_key = "ArrowLeft" 
-			right_key = "ArrowRight"
+			left_key = ["ArrowLeft" ]
+			right_key = ["ArrowRight"]
 
 
 		when 41
@@ -1935,8 +1935,33 @@ trial_corners_forced = ->
 			right_speed_x = -right_speed
 			left_speed_y = -left_speed
 			right_speed_y = right_speed
-			left_key = "ArrowUp" 
-			right_key = "ArrowDown"
+			left_key = ["ArrowUp" ]
+			right_key = ["ArrowDown"]
+
+		when 13
+			left.position.x = -1   
+			right.position.x = 1 
+			left.position.y = -1
+			right.position.y = +1
+			left_speed_x = left_speed
+			right_speed_x = -right_speed
+			left_speed_y = left_speed
+			right_speed_y = -right_speed
+			left_key = ["ArrowDown" , "ArrowLeft"]
+			right_key = ["ArrowUp" , "ArrowRight"]
+
+		when 24
+			left.position.x = -1   
+			right.position.x = 1 
+			left.position.y = 1
+			right.position.y = -1
+			left_speed_x = left_speed
+			right_speed_x = -right_speed
+			left_speed_y = -left_speed
+			right_speed_y = right_speed
+			left_key = ["ArrowUp"  , "ArrowLeft"]
+			right_key = ["ArrowDown" , "ArrowRight"]
+
 
 		
 	left.material.color.setHex 0xffffff
@@ -1962,7 +1987,8 @@ trial_corners_forced = ->
 	
 	min_ttc = Math.min left_ttc, right_ttc
 	#disappearlocation = Math.random()*0.5 + 0.2
-	disappeartime = Math.random()*0.4 + 0.4
+	#disappeartime = Math.random()*0.4 + 0.4
+	disappeartime = 0.5
 	side_selected = 0
 	score = undefined
 
@@ -1974,7 +2000,9 @@ trial_corners_forced = ->
 		v0: left_speed
 		v1: right_speed
 		x0: left.position.x
+		y0: left.position.y
 		x1: right.position.x
+		y1: right.position.y
 		condition: condition
 		ttcdiff: ttc_diff
 		minttc: min_ttc
@@ -2001,11 +2029,11 @@ trial_corners_forced = ->
 				break
 			if score?
 				break
-			if event.key == left_key or event.touches?[0].clientX < event.target.clientWidth/2
+			if event.key in left_key or event.touches?[0].clientX < event.target.clientWidth/2
 				side_selected = -1
 				left.material.color.setHex 0xff00ff
 				trialdone = 1
-			else if event.key == right_key or event.touches?[0].clientX > event.target.clientWidth/2
+			else if event.key in  right_key or event.touches?[0].clientX > event.target.clientWidth/2
 				side_selected = 1
 				right.material.color.setHex 0xff00ff
 				trialdone = 1

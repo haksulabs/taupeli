@@ -721,7 +721,6 @@ trial_n_and_n = (left_n, right_n, n_lanes) ->
 	shuffleArray(lanes)
 	right_ys = for lane in lanes
 		(lane - (n_lanes - 1)/2)*object_separation
-	console.log right_ys
 	right_primary.position.y = right_ys[0]
 	right_objects = [right_primary]
 	for i in [1...right_n]
@@ -823,6 +822,7 @@ draw_n_and_n = (n) ->
 			break
 		if nright == n
 			nleft += nextra
+			break
 		left = Math.random() < 0.5
 		if left
 			nleft += 1

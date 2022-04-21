@@ -256,13 +256,13 @@ arrow keys (&#8678; &#8680;) which one is first at the center.</p>
 <div>
 <h1>Select the critical object</h1>
 <p>Objects appear from left and right and approach the center. Keep your left and right hand
-index fingers on keys d and k respectively and indicate with the keys whether an object from the left (d) or the right (k) is first at the center.</p>
+index fingers on keys f and j respectively and indicate with the keys whether an object from the left (f) or the right (j) is first at the center.</p>
 <p>The faster you decide, the more points you get. Wrong answer gives double negative points.</p>
 <p>Press any key to continue.</p>
 
 <h1>Valitse kriittinen kohde</h1>
-<p>Kohteet tulevat vasemmalta ja oikealta ja lähestyvät keskilinjaa. Pidä vasemman ja oikean käden etusormet näppäimillä d ja k, ja valitse
-saavuttaako kohde vasemmalla (d) vai oikealla (k) ensin keskilinjan. </p>
+<p>Kohteet tulevat vasemmalta ja oikealta ja lähestyvät keskilinjaa. Pidä vasemman ja oikean käden etusormet näppäimillä f ja j, ja valitse
+saavuttaako kohde vasemmalla (f) vai oikealla (j) ensin keskilinjan. </p>
 <p>Nopeammasta vastauksesta saa enemmän pisteitä. Väärästä vastauksesta saa kaksinkertaisen määrän miinuspisteitä.</p>
 <p>Paina jotain näppäintä aloittaaksesi.</p>
 
@@ -759,11 +759,11 @@ trial_n_and_n = (left_n, right_n, n_lanes) ->
 		for event in events
 			if score?
 				break
-			if event.key == "d" or event.touches?[0].clientX < event.target.clientWidth/2
+			if event.key == "f" or event.touches?[0].clientX < event.target.clientWidth/2
 				side_selected = -1
 				for obj in left_objects
 					obj.material.color.setHex 0xff00ff
-			else if event.key == "k" or event.touches?[0].clientX > event.target.clientWidth/2
+			else if event.key == "j" or event.touches?[0].clientX > event.target.clientWidth/2
 				side_selected = 1
 				for obj in right_objects
 					obj.material.color.setHex 0xff00ff

@@ -121,6 +121,39 @@ body > canvas {
 <div id="answerprompt">
 </div>
 
+<div class="instruction" id="corners_instruction">
+<div>
+<h1>Indicate the faster target</h1>
+<p>Targets are launched from the corners of the play area (top-left, top-right, bottom-left, bottom-right).
+Two targets are launched at a time. They travel at different speeds. The faster target will end up closer
+to the center of the crosshairs. They are visible only for a brief time, and disappear at the same time.
+</p>
+<p>
+Use the arrow keys (up, down, left, right) to indicate which of the two targets was the faster one
+(reached closer to the center of the crosshairs before disappearing).
+</p>
+<p>Your goal is to get as high a total score
+as possible. Correct answer gives +100 points, wrong answer gives -200 points.<p>
+<p>Press any key to continue.</p>
+
+<h1>Valitse nopein kohde</h1>
+<p>Pelialueen kulmista (ylävasen, yläoikea, alavasen, alaoikea) lähtee kohteita kaksi kerrallaan.
+Ne liikkuvat eri nopeuksilla. Nopeampi kohde päätyy lähemmäs ristikkoa pelialueen keskellä. Kohteet näkyvät
+vain hetken aikaa ja katoavat samaan aikaan.</p>
+<p>
+Käytä nuolinäppäimiä (ylös, alas, vasen, oikea) osoittamaan kumpi kohteista oli nopeampi (ehti lähemmäs
+keskustan ristikkoa ennen katoamista).
+</p>
+<p>
+Tavoitteenasi on kerätä mahdollisimman paljon pisteitä. Oikeasta vastauksesta saa +100 pistettä, väärästä
+vastauksesta -200.
+</p>
+<p>
+Paina mitä tahansa näppäintä jatkaaksesi.
+</p>
+</div>
+</div>
+
 <div class="instruction" id="forced_two_and_one_instruction">
 <div>
 <h1>TOPELI 2-1: Select the critical object</h1>
@@ -252,7 +285,7 @@ arrow keys (&#8678; &#8680;) which one is first at the center.</p>
 </div>
 </div>
 
-<div class="instruction" id="trialinstruction_multi">
+<div class="instruction" id="trialinstruction_multi_old">
 <div>
 <h1>Select the critical object</h1>
 <p>Objects appear from left and right and approach the center. Keep your left and right hand
@@ -268,6 +301,30 @@ saavuttaako kohde vasemmalla (f) vai oikealla (j) ensin keskilinjan. </p>
 
 </div>
 </div>
+
+<div class="instruction" id="trialinstruction_multi">
+<div>
+<h1>Mark the critical side</h1>
+<p>One to three horizontally moving targets are launched from the left and right edges of the play area. The targets set of at the same time
+but move at different speeds. Therefore, the fastest target will reach the midline first.</p>
+<p>Use the f and j keys to "mark" the targets on the critical side. The critical side is the side that has the fastest target.
+Keep your left index finger on the f key and right index finger
+on the j key.
+<p>Your goal is to get as high a total score as possible. You're awarded points for both speed and precision. The faster you respond
+correctly, the more points you will get, but the faster you make an incorrect response, the more more points you will be penalized. Remember
+that only the fastest target determines whether your answer is correct or incorrect.</p>
+
+<h1>Merkitse kriittinen puoli</h1>
+<p>Yhdestä kolmeen kohdetta lähtee liikkeelle pelialueen vasemmasta ja oikeasta reunasta. Kohteet lähtevät samaan aikaan, mutta
+liikkuvat eri nopeuksilla. Täten nopein kohde saavuttaa keskilinjan ensin.</p>
+<p>Käytä f- ja j-näppäimiä merkitsemään kriittisen puolen kohteet. Kriittinen puoli on se, jolla on nopein kohde. Pidä
+vasen etusormesi f-näppäimellä ja oikea etusormesi j-näppäimellä.</p>
+<p>Tavoitteenasi on saada mahdollisimman paljon pisteitä. Saat pisteitä sekä nopeudesta että tarkkuudesta. Mitä nopeammin vastaat
+oikein, sitä enemmän saat pisteitä, mutta mitä nopeammin annat väärän vastauksen, sitä vähemmän pisteitä saat. Muista että vain
+nopein kohde määrittää onko vastauksesi oikein vai väärin.
+</div>
+</div>
+
 
 
 <div class="instruction" id="trialinstruction_practice">
@@ -2200,7 +2257,7 @@ start_corner_game = ->
 			linewidth: 3
 	)
 	scene.add vline
-	#await show_instruction "forcedstaticinstruction"
+	await show_instruction "corners_instruction"
 	for i in [0...250]
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""

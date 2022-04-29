@@ -797,6 +797,7 @@ trial_n_and_n = (left_n, right_n, n_lanes) ->
 		right_n: right_n
 		ttc_diff: ttc_diff
 		min_ttc: min_ttc
+		trial_start_utc: Date.now()
 		objects: for obj in objects
 			x: obj.position.x
 			y: obj.position.y
@@ -836,6 +837,7 @@ trial_n_and_n = (left_n, right_n, n_lanes) ->
 			trialinfo.side_selected = side_selected
 			trialinfo.reply_ttc_time = min_ttc - t
 			trialinfo.reply_time = t
+			trialinfo.reply_time_utc = Date.now()
 			
 			update_score(score)
 			trialinfo.score = score
@@ -2065,6 +2067,7 @@ trial_corners_forced = ->
 		ttcdiff: ttc_diff
 		minttc: min_ttc
 		disappear: disappeartime
+		start_time_utc: Date.now()
 
 	
 
@@ -2106,6 +2109,7 @@ trial_corners_forced = ->
 				trialinfo.correct = 1
 			trialinfo.reply_ttc_time = min_ttc - (t-t0)
 			trialinfo.reply_time = (t-t0)
+			trialinfo.reply_time_utc = Date.now()
 
 			update_score(score)
 			trialinfo.score = score

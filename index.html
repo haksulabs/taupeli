@@ -2322,6 +2322,31 @@ start_corner_game = ->
 	document.getElementById("trialscore").innerHTML = ""
 	document.getElementById("answerprompt").innerHTML = ""
 
+start_corner_game_blocked = ->
+	vline = new THREE.Line(
+		new THREE.BufferGeometry().setFromPoints([
+			new THREE.Vector3(-1, 0, 0),
+			new THREE.Vector3(1, 0, 0)
+			]),
+		new THREE.LineBasicMaterial
+			linewidth: 3
+	)
+	scene.add vline
+	for block in [0...7]
+		await show_instruction "corners_instruction"
+		for i in [0...150]
+			document.getElementById("trialscore").innerHTML = ""
+			document.getElementById("answerprompt").innerHTML = ""
+
+			#await new Promise (a) -> setTimeout a, 300
+			await pause_rendered 0.3
+			await trial_corners_forced()
+			await new Promise (a) -> setTimeout a, 1000
+
+		document.getElementById("trialscore").innerHTML = ""
+		document.getElementById("answerprompt").innerHTML = ""
+
+
 start_timed_game = ->
 	for j in [0...5]
 		await show_instruction "trialinstruction_multi"
@@ -2396,6 +2421,7 @@ window.launch_game = ->
 	switch url.searchParams.get("game")
 		when "static_forced" then await start_static_game()
 		when "corners" then await start_corner_game()
+		when "corners_blocked" then await start_corner_game_blocked()
 		when "timed" then await start_timed_game()
 		when "forced" then await start_forced_game()
 		when "randomloc" then await start_randomloc_game()

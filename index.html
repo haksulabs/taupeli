@@ -770,7 +770,11 @@ function shuffleArray(array) {
 }
 `
 
+rand = (start, end) ->
+	Math.random()*(end - start) + start
+
 trial_n_and_n = (left_n, right_n, n_lanes) ->
+	MINPOS = 0.5
 	[left_speed, right_speed] = get_speeds()
 
 	left_ttc = Math.abs 1/left_speed
@@ -779,13 +783,17 @@ trial_n_and_n = (left_n, right_n, n_lanes) ->
 	min_ttc = Math.min left_ttc, right_ttc
 
 	left_primary = new_object()
-	left_primary.position.x = -1
-	left_primary.speed = left_speed
+	pos = -rand(MINPOS, 1)
+	speed = -pos/left_ttc
+	left_primary.position.x = pos
+	left_primary.speed = speed
 	left_primary.ttc = -left_primary.position.x/left_speed
 
 	right_primary = new_object()
-	right_primary.position.x = 1
-	right_primary.speed = right_speed
+	pos = rand(MINPOS, 1)
+	speed = -pos/right_ttc
+	right_primary.position.x = pos
+	right_primary.speed = speed
 	right_primary.ttc = -right_primary.position.x/right_speed
 	
 	object_separation = 0.2
@@ -797,9 +805,11 @@ trial_n_and_n = (left_n, right_n, n_lanes) ->
 	left_objects = [left_primary]
 	for i in [1...left_n]
 		obj = new_object()
-		obj.position.x = -1
+		ttc = left_ttc + Math.random()*0.3
+		pos = -rand(MINPOS, 1)
+		obj.position.x = pos
+		obj.speed = -pos/ttc
 		obj.position.y = left_ys[i]
-		obj.speed = left_speed - Math.random()*0.3
 		left_objects.push obj
 	
 	lanes = [0...n_lanes]
@@ -810,9 +820,11 @@ trial_n_and_n = (left_n, right_n, n_lanes) ->
 	right_objects = [right_primary]
 	for i in [1...right_n]
 		obj = new_object()
-		obj.position.x = 1
+		ttc = right_ttc + Math.random()*0.3
+		pos = rand(MINPOS, 1)
+		obj.position.x = pos
+		obj.speed = -pos/ttc
 		obj.position.y = right_ys[i]
-		obj.speed = right_speed + Math.random()*0.3
 		right_objects.push obj
 	
 	objects = left_objects.concat right_objects

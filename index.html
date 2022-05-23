@@ -568,7 +568,7 @@ update_score = (score) ->
 	document.getElementById("score").innerHTML = Math.round(total_score)
 
 display_trial_score = (score) -> 
-	background.material.uniforms.seed.value = n_trials
+	background.material.uniforms.seed.value = n_trials%100
 	document.getElementById("trialscore").innerHTML = Math.round(score*100)
 
 

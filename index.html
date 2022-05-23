@@ -304,7 +304,7 @@ saavuttaako kohde vasemmalla (f) vai oikealla (j) ensin keskilinjan. </p>
 
 <div class="instruction" id="trialinstruction_multi">
 <div>
-<h1>Mark the critical side</h1>
+<h1>Mark the critical side <span class="blocknumber"></span>/10</h1>
 <p>One to three horizontally moving targets are launched from the left and right sides of the play area. The targets set off at the same time
 but move at different speeds.</p>
 <p>Use the f and j keys to "mark" the targets on the critical side. The critical side is the side that has the target that hits the center first.
@@ -312,16 +312,16 @@ Keep your left index finger on the f key (marks the left side) and right index f
 on the j key (marks the right side).
 <p>Your goal is to get as high a total score as possible. You are awarded points for both speed and precision. The faster you respond
 correctly, the more points you will get, but the faster you make an incorrect response, the more points you will be penalized. Remember
-that only the fastest target determines whether your answer is correct or incorrect.</p>
+that only the target first to center determines whether your answer is correct or incorrect.</p>
 
-<h1>Merkitse kriittinen puoli</h1>
+<h1>Merkitse kriittinen puoli <span class="blocknumber"></span>/10</h1>
 <p>Yhdestä kolmeen kohdetta lähtee liikkeelle pelialueen vasemmalta ja oikealta puolelta. Kohteet lähtevät samaan aikaan, mutta
 liikkuvat eri nopeuksilla.</p>
 <p>Käytä f- ja j-näppäimiä merkitsemään kriittisen puolen kohteet. Kriittinen puoli on se, jolla kohde saavuttaa ensin keskilinjan. Pidä
 vasen etusormesi f-näppäimellä (merkitsee vasemman puolen) ja oikea etusormesi j-näppäimellä (merkitsee oikean puolen).</p>
 <p>Tavoitteenasi on saada mahdollisimman paljon pisteitä. Saat pisteitä sekä nopeudesta että tarkkuudesta. Mitä nopeammin vastaat
 oikein, sitä enemmän saat pisteitä, mutta mitä nopeammin annat väärän vastauksen, sitä enemmän pisteitä menetät. Muista, että vain
-nopein kohde määrittää onko vastauksesi oikein vai väärin.
+keskikohdan ensin saavuttava kohde määrittää onko vastauksesi oikein vai väärin.
 </div>
 </div>
 
@@ -2360,9 +2360,13 @@ start_corner_game_blocked = ->
 
 
 start_timed_game = ->
-	for j in [0...7]
+	for j in [0...10]
+		els = document.getElementsByClassName("blocknumber")
+		for el in els
+			el.innerHTML = j+1	
 		await show_instruction "trialinstruction_multi"
-		for i in [0...150]
+		
+		for i in [0...100]
 			document.getElementById("trialscore").innerHTML = ""
 			document.getElementById("answerprompt").innerHTML = ""
 

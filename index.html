@@ -29,6 +29,7 @@
 
 }
 
+
 #trialscore_wrapper {
 	position: absolute;
 	display: flex;
@@ -325,7 +326,12 @@ keskikohdan ensin saavuttava kohde määrittää onko vastauksesi oikein vai vä
 </div>
 </div>
 
-
+<div class="instruction" id="blockscore">
+<div>
+<h1>Score <span id="blockpoints"></span> points.</h1>
+<p>Press any key to continue
+</div>
+</div>
 
 <div class="instruction" id="trialinstruction_practice">
 <div>
@@ -2361,6 +2367,7 @@ start_corner_game_blocked = ->
 
 start_timed_game = ->
 	for j in [0...10]
+		score_before = total_score
 		els = document.getElementsByClassName("blocknumber")
 		for el in els
 			el.innerHTML = j+1	
@@ -2378,7 +2385,9 @@ start_timed_game = ->
 			await trial_n_and_n left_n, right_n, 3
 			await new Promise (a) -> setTimeout a, 1000
 			#await pause_rendered 1.0
-		
+		block_score = total_score - score_before
+		document.getElementById("blockpoints").innerHTML = Math.round(block_score)
+		await show_instruction "blockscore"
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""
 

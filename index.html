@@ -386,6 +386,7 @@ nuolinäppäimillä (&#8678; &#8680;) kumpi kohde on lähempänä keskilinjaa</p
 	</form>
 	</div>
 </div>
+
 <script type="text/javascript" src="coffeescript.js"></script>
 <script type="text/javascript" src="three.js"></script>
 
@@ -661,6 +662,35 @@ get_speeds_randloc = ->
 	#	left_speed = (Math.random()*0.15 + 0.5)
 	#	right_speed = -(Math.random()*0.15 + 0.5)
 	[left_speed, right_speed]
+
+get_speeds_corners = ->
+
+	# Randomize uniform ttcdiff 
+
+	abs_max_ttc_diff = 1.0
+
+	min_speed = 0.4
+	max_speed = 1.1
+	
+	abs_ttc_diff = Math.random()*abs_max_ttc_diff
+	
+	min_t = 1/max_speed
+	max_t = 1/min_speed
+
+	ttc_0 = Math.random() * ((max_t-abs_ttc_diff) - min_t) + min_t
+	ttc_1 = ttc_0 + abs_ttc_diff
+	
+	if Math.random() < 0.5
+		left_speed = 1/ttc_0
+		right_speed = -1/ttc_1
+	else
+		left_speed = 1/ttc_1
+		right_speed = -1/ttc_0
+
+	#	left_speed = (Math.random()*0.15 + 0.5)
+	#	right_speed = -(Math.random()*0.15 + 0.5)
+	[left_speed, right_speed]
+
 
 
 trial = ->
@@ -2012,23 +2042,43 @@ trial_corners_forced = ->
 	console.log condition
 
 	
-	[left_speed, right_speed] = get_speeds()
+	[left_speed, right_speed] = get_speeds_corners()
 
 	left_ttc = Math.abs 1/left_speed
 	right_ttc = Math.abs 1/right_speed
 	ttc_diff = right_ttc - left_ttc
 	min_ttc = Math.min left_ttc, right_ttc
 
-	MINPOS = 0.5
-	pos = rand(MINPOS, 1)
-	left_speed = pos/left_ttc
-	left_pos = pos
+	# same starting location
+	mid_pos = 0.7
+
+	if Math.random() < 0.5
+		if Math.random() < 0.5
+			left_pos = mid_pos
+			right_pos = mid_pos
+			startpos=55
+		else
+			left_pos = 1.0
+			right_pos = 1.0
+			startpos=11
+	else
+	# different starting location
+		if Math.random() < 0.5
+			left_pos = mid_pos
+			right_pos = 1.0
+			startpos = 51
+		else
+			left_pos = 1.0
+			right_pos = mid_pos
+			startpos = 15
+
+	left_speed = left_pos/left_ttc
 	left_ttc = left_pos/left_speed
 
-	pos = rand(MINPOS, 1)
-	right_speed = pos/right_ttc
-	right_pos = pos
+	right_speed = right_pos/right_ttc
 	right_ttc = right_pos/right_speed
+	console.log right_speed
+	console.log left_speed
 
 
 	switch condition
@@ -2138,6 +2188,7 @@ trial_corners_forced = ->
 		minttc: min_ttc
 		disappear: disappeartime
 		start_time_utc: Date.now()
+		startpos: startpos
 
 	
 
@@ -2355,7 +2406,12 @@ start_corner_game_blocked = ->
 			linewidth: 3
 	)
 	scene.add vline
-	for block in [0...5]
+	for j in [0...5]
+		score_before = total_score
+		els = document.getElementsByClassName("blocknumber")
+		for el in els
+			el.innerHTML = j+1	
+
 		await show_instruction "corners_instruction"
 		for i in [0...100]
 			document.getElementById("trialscore").innerHTML = ""
@@ -2366,9 +2422,11 @@ start_corner_game_blocked = ->
 			await trial_corners_forced()
 			await new Promise (a) -> setTimeout a, 1000
 
+		block_score = total_score - score_before
+		document.getElementById("blockpoints").innerHTML = Math.round(block_score)
+		await show_instruction "blockscore"
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""
-
 
 start_timed_game = ->
 	for j in [0...10]

@@ -122,6 +122,71 @@ body > canvas {
 <div id="answerprompt">
 </div>
 
+
+
+<div class="instruction" id="corners_instruction_1">
+<div>
+<h1>Tervetuloa! </h1> 
+
+
+<div>
+<p>
+Tämä peli testaa ääreisnäön käyttöä ja keskittymistä.
+</p>
+</div>
+<div>
+<p>
+Paina mitä tahansa näppäintä jatkaaksesi.
+</p>
+
+</div>
+</div>
+</div>
+
+
+<div class="instruction" id="corners_instruction_2">
+<div>
+<p>
+Pelissä sinun pitää päättää kumpi kahdesta ehtisi ensimmäisenä ruudun keskipisteeseen.
+</p>
+
+<p>
+Pelialueen kulmien tuntumasta (ylävasen, yläoikea, alavasen, alaoikea) lähtee kaksi kohdetta kerrallaan. 
+</p>
+<p>
+Kohteet näkyvät vain hetken aikaa ja katoavat samaan aikaan. Ne liikkuvat eri nopeuksilla kohti keskipistettä.
+</p>
+
+<img src="corners_instruction_illustration.png" alt="Game illustration">
+
+<p>
+Jos kohteet jatkaisivat liikettään katoamisen jälkeen, toinen niistä osuisi keskipisteeseen ensin.
+</p>
+ 
+<p>
+Käytä nuolinäppäimiä (ylös, alas, vasen, oikea) osoittamaan kumpi kohteista on "kriittinen" kohde ja osuisi keskipisteeseen ensin.
+</p>
+
+ 
+<p>Paina mitä tahansa näppäintä jatkaaksesi.</p>
+</p>
+</div>
+</div>
+
+<div class="instruction" id="corners_instruction_3">
+<div>
+<p>
+Vihje: sormet kannattaa pitää koko ajan nuolinäppäinten tuntumassa! 
+</p>
+<p>Paina mitä tahansa näppäintä aloittaaksesi pelin.</p>
+
+</p>
+</div>
+</div>
+
+
+
+
 <div class="instruction" id="corners_instruction">
 <div>
 <h1>Indicate the faster target</h1>
@@ -329,6 +394,7 @@ keskikohdan ensin saavuttava kohde määrittää onko vastauksesi oikein vai vä
 <div class="instruction" id="blockscore">
 <div>
 <h1>Score <span id="blockpoints"></span> points.</h1>
+<h1>Round number <span id="blocknumber"> </span>  </h1>
 <p>Press any key to continue
 </div>
 </div>
@@ -2406,14 +2472,18 @@ start_corner_game_blocked = ->
 			linewidth: 3
 	)
 	scene.add vline
-	for j in [0...10]
+	num_blocks = 10
+	num_trials = 100
+	for j in [0...num_blocks]
 		score_before = total_score
 		els = document.getElementsByClassName("blocknumber")
 		for el in els
 			el.innerHTML = j+1	
-
-		await show_instruction "corners_instruction"
-		for i in [0...100]
+		
+		await show_instruction "corners_instruction_1"
+		await show_instruction "corners_instruction_2"
+		await show_instruction "corners_instruction_3"
+		for i in [0...num_trials]
 			document.getElementById("trialscore").innerHTML = ""
 			document.getElementById("answerprompt").innerHTML = ""
 
@@ -2424,6 +2494,7 @@ start_corner_game_blocked = ->
 
 		block_score = total_score - score_before
 		document.getElementById("blockpoints").innerHTML = Math.round(block_score)
+		document.getElementById("blocknumber").innerHTML = j+1 + "/" + num_blocks
 		await show_instruction "blockscore"
 		document.getElementById("trialscore").innerHTML = ""
 		document.getElementById("answerprompt").innerHTML = ""

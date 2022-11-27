@@ -3,6 +3,8 @@
 Created on Wed Feb  9 17:00:24 2022
 
 @author: t
+
+taupeli logfiles from directory mypath to dataframe
 """
 import pandas as pd
 

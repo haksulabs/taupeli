@@ -46,7 +46,7 @@ def simple(prob):
 
 def m(stdcoeff):
   
-    stdcoeff = 0.1
+    #tdcoeff = 0.1
     oikein=[]
     vaarin=[]
     
@@ -56,10 +56,10 @@ def m(stdcoeff):
         # print('ttc0: ',ttc0)
         # print('ttc1: ',ttc1)
         # ttc_diff = ttc0 - ttc1
-        p = selection_likelihood(stdcoeff,row.x0,row.v0,row.x1,row.v1)
+        #p = selection_likelihood(stdcoeff,row.x0,row.v0,row.x1,row.v1)
      
-        #p = simple(stdcoeff)
-        
+        p = simple(stdcoeff)
+        #p = stdcoeff
         if(row.ttcdiff<0):
             p = 1-p
             
@@ -88,8 +88,8 @@ dfkh = dfkh[dfkh.condition.isin(conditions)]
 
 
 #print(m(1))
-guess = [1]
-best = minimize(m,guess)
+guess = [0.4]
+best = minimize(m,guess,bounds=(None,0.9))
 
 
 print('subject accuracy: ', np.mean(dfkh.correct))

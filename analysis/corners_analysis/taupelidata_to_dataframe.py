@@ -19,9 +19,9 @@ column_names = ['name','type', 'v0', 'v1', 'x0', 'x1','v2','v3','x2','x3', 'ttcd
 df = pd.DataFrame(columns= column_names)
 
 #mypath = '/Users/t/Documents/taupeli_data/noise/'
-mypath = '/Users/t/Documents/GitHub/taupeli/analysis/taupeli_data/corners_lab_pilot/'
+#mypath = '/Users/t/Documents/GitHub/taupeli/analysis/taupeli_data/corners_lab_pilot/'
+mypath = 'c:/Users/t/repoman/taupeli/analysis/taupeli_data/corners_lab_pilot/'
 #mypath = 'C:/Users/t/iCloudDrive/Documents/taupeli_data/corners_lab_pilot/'
-
 #mypath = '/Users/t/Documents/taupeli_data/corners_lab_pilot/'
 
 #mypath = '/Users/t/Documents/taupeli_data/two_and_one/'

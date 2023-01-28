@@ -20,7 +20,7 @@ df = pd.DataFrame(columns= column_names)
 
 #mypath = '/Users/t/Documents/taupeli_data/noise/'
 #mypath = '/Users/t/Documents/GitHub/taupeli/analysis/taupeli_data/corners_lab_pilot/'
-mypath = 'c:/Users/t/repoman/taupeli/analysis/taupeli_data/corners_lab_pilot/'
+mypath = 'h:/repoman/taupeli/analysis/taupeli_data/corners_lab_pilot/'
 #mypath = 'C:/Users/t/iCloudDrive/Documents/taupeli_data/corners_lab_pilot/'
 #mypath = '/Users/t/Documents/taupeli_data/corners_lab_pilot/'
 

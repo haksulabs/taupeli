@@ -8,6 +8,10 @@ Created on Thu Aug  4 14:13:20 2022
 
 import pandas as pd
 import numpy as np 
+import scipy.stats as stats
+
+
+
 
 
 
@@ -81,6 +85,30 @@ df_acc_differ = accuracy(df_differ)
 
 df_acc_all['startpos same'] = df_acc_same['accuracy']
 df_acc_all['startpos differ'] = df_acc_differ['accuracy']
+
+#df_acc_all contains all results, use this to calculate further
+
+# calculate standard deviations etc
+
+df_acc_std = pd.DataFrame()
+
+conditions = df_acc_all.condition.unique()
+for con in conditions:
+    df_acc_con = df_acc_all[(df_acc_all.condition==con) & (df_acc_all.name!='total')]
+    
+    
+    std_all = df_acc_con['accuracy'].std()
+    std_same = df_acc_con['startpos same'].std()
+    std_differ = df_acc_con['startpos differ'].std()
+    
+    # paired ttest
+    stats.ttest_rel(df_acc_con['startpos same'], df_acc_con['startpos differ'])
+    res = stats.ttest_rel(df_acc_con['startpos same'], df_acc_con['startpos differ'])
+    
+    d = {'condition':con, 'std_all':std_all, 'std_startpos_same':std_same, 'std_startpos_differ':std_differ,'ttest_p': res.pvalue}
+    df_acc_std = df_acc_std.append(d,ignore_index=True)
+
+
 
 # # startposition difference
 

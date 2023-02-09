@@ -38,6 +38,7 @@ def selection_likelihood(stdcoeff, x0,v0,x1,v1):
     #print('variance: ', ttc_diff_var)
     
     p1 = scipy.stats.norm(ttc_diff, np.sqrt(ttc_diff_var)).cdf(0.0)
+   # print('p1 : ', p1)
     
     return p1
 
@@ -56,15 +57,18 @@ def m(stdcoeff):
         # print('ttc0: ',ttc0)
         # print('ttc1: ',ttc1)
         # ttc_diff = ttc0 - ttc1
-        #p = selection_likelihood(stdcoeff,row.x0,row.v0,row.x1,row.v1)
+        
      
-        p = simple(stdcoeff)
-        #p = stdcoeff
-        if(row.ttcdiff<0):
-            p = 1-p
+        
+        p = stdcoeff
+        
+        
+        #p = selection_likelihood(stdcoeff,row.x0,row.v0,row.x1,row.v1)
+        #if(row.ttcdiff<0):
+        #    p = 1-p
             
         
-#        print(p, row.correct)
+        print(p, row.correct)
         if(row.correct):
             oikein.append(p)
             likelihoods.append(p)
@@ -73,14 +77,15 @@ def m(stdcoeff):
             likelihoods.append(1-p)
         
     print('tama ' , np.mean(oikein + vaarin))
-#    print('likelihoods summa', np.sum(-np.log(likelihoods)))
+    print('likelihoods summa', np.sum(-np.log(likelihoods)))
     return np.sum(-np.log(likelihoods))
 
 df = pd.read_csv('taupelidata_corners_pilotit.csv')
 
-name = 'kh27_corners'
+#name = 'kh27_corners'
 #name = 'Samuel'
-    
+name = 'corners_kh44'    
+
 conditions = [12,34]
     
 dfkh = df[df.name==name]
@@ -88,8 +93,8 @@ dfkh = dfkh[dfkh.condition.isin(conditions)]
 
 
 #print(m(1))
-guess = [0.4]
-best = minimize(m,guess,bounds=(None,0.9))
+guess = [0.2]
+best = minimize(m,guess,bounds=((None,0.9),))
 
 
 print('subject accuracy: ', np.mean(dfkh.correct))

@@ -31,7 +31,8 @@ import statsmodels.api as sm
 df = pd.read_csv('taupelidata_corners_pilotit.csv')
 
 #name = 'Samuel'
-name = 'kh37_corners'
+#name = 'kh37_corners'
+name = 'tero_eta'
 
 
 df1 = df[df['name']==name]   
@@ -45,9 +46,9 @@ X['max_speed'] = np.abs(df1[["v0", "v1"]]).max(axis=1)
 X['min_speed'] = np.abs(df1[["v0", "v1"]]).min(axis=1)
 X['reply_time'] = df1['reply_time']
 X['minttc'] = df1['minttc']
-X['speed_dif'] = X.max_speed - X.min_speed
+X['xdiff'] = np.abs(df1.x0 + df1.v0*0.5) + np.abs(df1.x1 - df1.v1*0.5)
 
-Xorig = X.copy()
+
 
 y = df1.correct
 
@@ -56,7 +57,7 @@ X.insert(0,'intercept',0)
 
 # select features to use in the model
 #features = ['intercept','abs_ttcdiff','max_speed','min_speed']
-features = ['intercept','abs_ttcdiff','max_speed','min_speed']
+features = ['intercept','abs_ttcdiff','xdiff']
 
 X_train,X_test, y_train, y_test = train_test_split(X[features], y, train_size = 0.9)
 
@@ -81,13 +82,18 @@ fitted_1 = expit(x * model.coef_[0,1] + model.intercept_)
 plt.scatter(X_test.abs_ttcdiff, y_test, label="data", color="red")
 plt.plot(x, fitted_1, '-', label="Logistic Regression Model with only abs_ttcdiff", color="red")
 
-plt.scatter(X_test.abs_ttcdiff, y_prob[:,1], label="Logistic Regression Model prediction", color="blue")
+plt.scatter(X_test.abs_ttcdiff, y_prob[:,1], label="Logistic Regression predicted probability", color="blue")
 
 
 plt.legend()
 plt.show()
 
 
-smodel = sm.Logit(y, Xorig)
+# use statsmodel instaed to get p-values etc
+
+features = ['abs_ttcdiff', 'xdiff']
+Xs = X[features]
+
+smodel = sm.Logit(y, Xs)
 result = smodel.fit(method='newton')
 print(result.summary())

@@ -17,12 +17,12 @@ from sklearn.preprocessing import StandardScaler
 
 df = pd.read_csv('taupelidata_corners_pilotit.csv')
 
-name = 'Samuel'
+#name = 'Samuel'
 #name = 'kh37_corners'
 #name = 'tero_eta'
 
-data = df[df['name']==name].copy()
-#data = df.copy()
+#data = df[df['name']==name].copy()
+data = df.copy()
 
 #data = sm.add_constant(df)
 scaler = StandardScaler()
@@ -40,14 +40,19 @@ data['min_v'] = data[['abs_v0','abs_v1']].min(axis=1)
 data['min_v_norm'] = scaler.fit_transform(data[['min_v']])
 data['max_v_norm'] = scaler.fit_transform(data[['max_v']])
 
-data['xdiff'] = np.abs(data.x0 + data.v0*0.5) + np.abs(data.x1 - data.v1*0.5)
-data['xdiff_norm'] = scaler.fit_transform(data[['xdiff']])
+#data['xdiff'] = np.abs(data.x0 + data.v0*0.5) + np.abs(data.x1 - data.v1*0.5)
+#data['xdiff_norm'] = scaler.fit_transform(data[['xdiff']])
 
+data['ydiff'] = (data.y0 - data.y1)
+data['ydiff_norm'] = scaler.fit_transform(data[['ydiff']])
+
+data['xdiff'] = (data.x0 - data.x1)
+data['xdiff_norm'] = scaler.fit_transform(data[['xdiff']])
 
 logit_model_basic = sm.Logit(data['correct'], data[['xdiff_norm']])
 logit_model_basic2 = sm.Logit(data['correct'], data[['abs_ttcdiff_norm']])
 
-logit_model = sm.Logit(data['correct'], data[['abs_ttcdiff_norm', 'minttc_norm','max_v_norm','min_v_norm','xdiff_norm']])
+logit_model = sm.Logit(data['correct'], data[['abs_ttcdiff_norm', 'minttc_norm','max_v_norm','min_v_norm','xdiff_norm','ydiff_norm']])
 
 
 

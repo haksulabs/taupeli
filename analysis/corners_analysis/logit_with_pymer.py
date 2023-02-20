@@ -47,28 +47,33 @@ df['y1_end'] = np.sign(df.y1) * (np.abs(df.y1) - df.v1*0.5)
 
 df['xseparation'] = np.abs(df.x1_end - df.x0_end)
 df['yseparation'] = np.abs(df.y1_end - df.y0_end)
+df['xseparation_norm'] = scaler.fit_transform(df[['xseparation']])
+df['yseparation_norm'] = scaler.fit_transform(df[['yseparation']])
 
 df['xenddif'] = np.abs(np.abs(df.x1_end) - np.abs(df.x0_end))
 df['yenddif'] = np.abs(np.abs(df.y1_end) - np.abs(df.y0_end))
 
+df['xenddif_norm'] = scaler.fit_transform(df[['xenddif']])
+df['yenddif_norm'] = scaler.fit_transform(df[['yenddif']])
+
 orig_df = df.copy()
 
 
+con = 23
+print('condition ', con)
+df =orig_df[orig_df['condition']==con]
 
-print('condition 23')
-df =orig_df[orig_df['condition']==23]
-
-model = Lm("correct ~ 1 +  abs_ttcdiff", data=df, family = 'binomial')
+model = Lm("correct ~ 1 +  abs_ttcdiff_norm", data=df, family = 'binomial')
 print(model.fit())
 
-model = Lm("correct ~ 1 +  abs_ttcdiff + xenddif", data=df, family = 'binomial')
+model = Lm("correct ~ 1 +  abs_ttcdiff_norm + xenddif_norm", data=df, family = 'binomial')
 print(model.fit())
 
 
 
 print('startpos 11')
 df1 = df[df['startpos'].isin([11,55])]
-model = Lm("correct ~ 1 +  abs_ttcdiff + xenddif", data=df1, family = 'binomial')
+model = Lm("correct ~ 1 +  abs_ttcdiff_norm + xenddif_norm", data=df1, family = 'binomial')
 print(model.fit())
 
 
@@ -76,7 +81,7 @@ print(model.fit())
 
 print('startpos 15')
 df2 = df[df['startpos'].isin([15,51])]
-model = Lm("correct ~ 1 +  abs_ttcdiff + xenddif", data=df2, family = 'binomial')
+model = Lm("correct ~ 1 +  abs_ttcdiff_norm + xenddif_norm", data=df2, family = 'binomial')
 print(model.fit())
 
 # # condition 12
@@ -106,12 +111,25 @@ print(model.fit())
 
 # print(model.fit())
 
-# print('--------------------------------------------')
-# print('multilevel model')
 
-# model = Lmer("correct ~ abs_ttcdiff + xdif + (1|name) ", data=df, family = 'binomial')
 
-# print(model.fit())
+
+print('--------------------------------------------')
+print('multilevel model')
+
+model = Lmer("correct ~ abs_ttcdiff_norm + xenddif_norm + yseparation_norm + (1|name) ", data=df, family = 'binomial')
+
+print(model.fit())
+
+print('startpos 11')
+df1 = df[df['startpos'].isin([11,55])]
+model =  Lmer("correct ~ abs_ttcdiff_norm + xenddif_norm + yseparation_norm + (1|name) ", data=df1, family = 'binomial')
+print(model.fit())
+
+print('startpos 15')
+df2 = df[df['startpos'].isin([15,51])]
+model =  Lmer("correct ~ abs_ttcdiff_norm + xenddif_norm + yseparation_norm + (1|name) ", data=df2, family = 'binomial')
+print(model.fit())
 
 
 # print('--------------------------------------------')

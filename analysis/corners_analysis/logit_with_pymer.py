@@ -54,28 +54,42 @@ df['yenddif'] = np.abs(np.abs(df.y1_end) - np.abs(df.y0_end))
 orig_df = df.copy()
 
 
-# condition 12
-print('condition 12')
-df =orig_df[orig_df['condition']==12]
 
-model = Lm("correct ~ 1 +  abs_ttcdiff", data=df, family = 'binomial')
-print(model.fit())
-
-model = Lm("correct ~ 1 +  abs_ttcdiff + xenddif", data=df, family = 'binomial')
-print(model.fit())
-
-
-# condition 12
 print('condition 23')
 df =orig_df[orig_df['condition']==23]
 
-
-
 model = Lm("correct ~ 1 +  abs_ttcdiff", data=df, family = 'binomial')
 print(model.fit())
 
 model = Lm("correct ~ 1 +  abs_ttcdiff + xenddif", data=df, family = 'binomial')
 print(model.fit())
+
+
+
+print('startpos 11')
+df1 = df[df['startpos'].isin([11,55])]
+model = Lm("correct ~ 1 +  abs_ttcdiff + xenddif", data=df1, family = 'binomial')
+print(model.fit())
+
+
+
+
+print('startpos 15')
+df2 = df[df['startpos'].isin([15,51])]
+model = Lm("correct ~ 1 +  abs_ttcdiff + xenddif", data=df2, family = 'binomial')
+print(model.fit())
+
+# # condition 12
+# print('condition 23')
+# df =orig_df[orig_df['condition']==23]
+
+
+
+# model = Lm("correct ~ 1 +  abs_ttcdiff", data=df, family = 'binomial')
+# print(model.fit())
+
+# model = Lm("correct ~ 1 +  abs_ttcdiff + xenddif", data=df, family = 'binomial')
+# print(model.fit())
 
 
 
@@ -92,20 +106,20 @@ print(model.fit())
 
 # print(model.fit())
 
-print('--------------------------------------------')
-print('multilevel model')
+# print('--------------------------------------------')
+# print('multilevel model')
 
-model = Lmer("correct ~ abs_ttcdiff + xdif + (1|name) ", data=df, family = 'binomial')
+# model = Lmer("correct ~ abs_ttcdiff + xdif + (1|name) ", data=df, family = 'binomial')
 
-print(model.fit())
+# print(model.fit())
 
 
-print('--------------------------------------------')
-print('multilevel model')
+# print('--------------------------------------------')
+# print('multilevel model')
 
-model = Lmer("correct ~ abs_ttcdiff + ydif + (1|name) ", data=df, family = 'binomial')
+# model = Lmer("correct ~ abs_ttcdiff + ydif + (1|name) ", data=df, family = 'binomial')
 
-print(model.fit())
+# print(model.fit())
 
 
 

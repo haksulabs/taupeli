@@ -11,7 +11,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
 from sklearn.preprocessing import StandardScaler
+
 
 
 
@@ -49,21 +52,17 @@ data['ydiff_norm'] = scaler.fit_transform(data[['ydiff']])
 data['xdiff'] = (data.x0 - data.x1)
 data['xdiff_norm'] = scaler.fit_transform(data[['xdiff']])
 
-logit_model_basic = sm.Logit(data['correct'], data[['xdiff_norm']])
-logit_model_basic2 = sm.Logit(data['correct'], data[['abs_ttcdiff_norm']])
-
-logit_model = sm.Logit(data['correct'], data[['abs_ttcdiff_norm', 'minttc_norm','max_v_norm','min_v_norm','xdiff_norm','ydiff_norm']])
+#logit_model_basic = sm.Logit(data['correct'], data[['xdiff_norm']])
 
 
-
-result_basic = logit_model_basic.fit()
-result_basic2 = logit_model_basic2.fit()
-
-result = logit_model.fit()
+#logit_model_basic2 = sm.Logit(data['correct'], data[['abs_ttcdiff_norm']])
 
 
+#logit_model_basic2 = sm.Logit(data['correct'], data[['abs_ttcdiff']])
 
+#logit_model_basic2 = sm.Logit('correct ~ abs_ttcdiff', data = data)
+
+model = smf.logit('correct ~ 0 + abs_ttcdiff ', data=data)
+
+result_basic = model.fit()
 print(result_basic.summary())
-print(result_basic2.summary())
-
-print(result.summary())

@@ -9,10 +9,10 @@ Created on Thu Aug  4 14:13:20 2022
 import pandas as pd
 import numpy as np 
 import scipy.stats as stats
+from sklearn.preprocessing import StandardScaler
 
 
-
-
+scaler = StandardScaler()
 
 
 
@@ -27,18 +27,22 @@ def accuracy(df):
     df_correct = pd.DataFrame()
     acc = len(df[df.correct==1]) / len(df[((df['correct']==1) | (df['correct']==0))])
     d = {'name': 'total', 'type': typ, 'condition':'all', 'accuracy': acc }
-    df_correct = df_correct.append(d,ignore_index=True)
+    df_d = pd.DataFrame([d])
+    df_correct = pd.concat([df_correct,df_d],ignore_index=True)
+    #df_correct = df_correct.append(d,ignore_index=True)
     
     # separate conditions
-    conditions = df.condition.unique()
-    conditions.sort()
-
+    #conditions = df.condition.unique()
+    #conditions.sort()
+    conditions = [12,34,23,41,24,13]
     for con in conditions: 
         acc = len( df[(df.correct == 1) & (df.condition==con)] ) / \
             len(df[  ((df.correct == 1) | (df['correct'] == 0)) & (df.condition==con)    ])
             
         d = {'name': 'total', 'type': typ, 'condition': con, 'accuracy': acc }
-        df_correct = df_correct.append(d, ignore_index=True)
+        #df_correct = df_correct.append(d, ignore_index=True)
+        df_d = pd.DataFrame([d])
+        df_correct = pd.concat([df_correct,df_d],ignore_index=True)
 
     
     for name in names:
@@ -46,7 +50,9 @@ def accuracy(df):
         acc = len(kh_df[kh_df.correct == 1]) / \
             len(kh_df[((kh_df['correct'] == 1) | (kh_df['correct'] == 0))])
         d = {'name': name, 'type': typ, 'condition':'all', 'accuracy': acc}
-        df_correct = df_correct.append(d, ignore_index=True)
+        df_d = pd.DataFrame([d])
+        df_correct = pd.concat([df_correct,df_d],ignore_index=True)
+        #df_correct = df_correct.append(d, ignore_index=True)
 
 
 
@@ -62,7 +68,9 @@ def accuracy(df):
     
 
             d = {'name': name, 'type': typ, 'condition': con, 'accuracy': acc }
-            df_correct = df_correct.append(d, ignore_index=True)
+            df_d = pd.DataFrame([d])
+            df_correct = pd.concat([df_correct,df_d],ignore_index=True)
+            
 
 
 
@@ -70,7 +78,59 @@ def accuracy(df):
     
 
 
-df_orig = pd.read_csv('taupelidata_corners_pilotit.csv')
+df = pd.read_csv('taupelidata_corners_pilotit.csv')
+
+df['abs_ttcdiff'] = np.abs(df.ttcdiff)
+df['abs_ttcdiff_norm'] = scaler.fit_transform(df[['abs_ttcdiff']])
+
+df['minttc_norm'] = scaler.fit_transform(df[['minttc']])
+
+df['abs_v0'] = np.abs(df.v0)
+df['abs_v1'] = np.abs(df.v1)
+df['max_v'] = df[['abs_v0','abs_v1']].max(axis=1)
+df['min_v'] = df[['abs_v0','abs_v1']].min(axis=1)
+df['delta_v'] = df.max_v-df.min_v
+df['delta_v_norm'] = scaler.fit_transform(df[['delta_v']])
+
+df['min_v_norm'] = scaler.fit_transform(df[['min_v']])
+df['max_v_norm'] = scaler.fit_transform(df[['max_v']])
+
+
+df['x0_end'] = np.sign(df.x0) * (np.abs(df.x0) - df.v0*0.5)
+df['x1_end'] = np.sign(df.x1) * (np.abs(df.x1) - df.v1*0.5)
+
+df['y0_end'] = np.sign(df.y0) * (np.abs(df.y0) - df.v0*0.5)
+df['y1_end'] = np.sign(df.y1) * (np.abs(df.y1) - df.v1*0.5)
+
+df['xseparation'] = np.abs(df.x1_end - df.x0_end)
+df['yseparation'] = np.abs(df.y1_end - df.y0_end)
+df['xseparation_norm'] = scaler.fit_transform(df[['xseparation']])
+df['yseparation_norm'] = scaler.fit_transform(df[['yseparation']])
+
+df['tot_separation'] = np.sqrt(df['xseparation']**2 + df['yseparation']**2)
+df['tot_separation_norm'] = scaler.fit_transform(df[['tot_separation']])
+
+df['xenddif'] = np.abs(np.abs(df.x1_end) - np.abs(df.x0_end))
+df['yenddif'] = np.abs(np.abs(df.y1_end) - np.abs(df.y0_end))
+
+df['xenddif_norm'] = scaler.fit_transform(df[['xenddif']])
+df['yenddif_norm'] = scaler.fit_transform(df[['yenddif']])
+
+df['totdif'] = np.sqrt(df['xenddif']**2 + df['yenddif']**2)
+df['totdif_norm'] = scaler.fit_transform(df[['totdif']])
+
+df['stagger'] = df['startpos'].isin([15,51])
+df['stagger'] = df['stagger'].astype(int)
+orig_df = df.copy()
+df['x0_end'] = np.sign(df.x0) * (np.abs(df.x0) - df.v0*0.5)
+df['x1_end'] = np.sign(df.x1) * (np.abs(df.x1) - df.v1*0.5)
+df['x0_kauempana'] = np.sign((np.abs(df['x0_end']) - np.abs(df['x1_end'])))                             
+df['overtake'] = (df['x0_kauempana'] == np.sign(df['ttcdiff']))
+df['overtake'] = df['overtake'].astype(int)
+
+
+df_orig = df.copy()
+df_orig = df_orig[df_orig['n_trials']>20]
 
 df_acc_all = accuracy(df_orig)
 
@@ -79,9 +139,14 @@ df_acc_all = accuracy(df_orig)
 df_same = df_orig[(np.abs(df_orig.x0)-np.abs(df_orig.x1) == 0)]
 df_differ = df_orig[(np.abs(df_orig.x0)-np.abs(df_orig.x1) != 0)]
 
+df_overtake = df_differ[df_differ['overtake']==1]
+df_notovertake = df_differ[df_differ['overtake']==0]
 
 df_acc_same = accuracy(df_same)
 df_acc_differ = accuracy(df_differ)
+
+df_acc_overtake = accuracy(df_overtake)
+df_acc_notovertake = accuracy(df_notovertake)
 
 df_acc_all['startpos same'] = df_acc_same['accuracy']
 df_acc_all['startpos differ'] = df_acc_differ['accuracy']
@@ -106,7 +171,9 @@ for con in conditions:
     res = stats.ttest_rel(df_acc_con['startpos same'], df_acc_con['startpos differ'])
     
     d = {'condition':con, 'std_all':std_all, 'std_startpos_same':std_same, 'std_startpos_differ':std_differ,'ttest_p': res.pvalue}
-    df_acc_std = df_acc_std.append(d,ignore_index=True)
+    df_d = pd.DataFrame([d])
+    df_acc_std = pd.concat([df_acc_std,df_d],ignore_index=True)
+    #df_acc_std = df_acc_std.append(d,ignore_index=True)
 
 
 

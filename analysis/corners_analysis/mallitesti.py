@@ -60,15 +60,15 @@ def m(stdcoeff):
         
      
         
-        p = stdcoeff
+        #p = stdcoeff
         
         
-        #p = selection_likelihood(stdcoeff,row.x0,row.v0,row.x1,row.v1)
-        #if(row.ttcdiff<0):
-        #    p = 1-p
+        p = selection_likelihood(stdcoeff,row.x0,row.v0,row.x1,row.v1)
+        if(row.ttcdiff<0):
+            p = 1-p
             
         
-        print(p, row.correct)
+        #print(p, row.correct)
         if(row.correct):
             oikein.append(p)
             likelihoods.append(p)
@@ -78,6 +78,7 @@ def m(stdcoeff):
         
     print('tama ' , np.mean(oikein + vaarin))
     print('likelihoods summa', np.sum(-np.log(likelihoods)))
+    #print(likelihoods
     return np.sum(-np.log(likelihoods))
 
 df = pd.read_csv('taupelidata_corners_pilotit.csv')

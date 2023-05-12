@@ -125,8 +125,8 @@ orig_df = df.copy()
 df['x0_end'] = np.sign(df.x0) * (np.abs(df.x0) - df.v0*0.5)
 df['x1_end'] = np.sign(df.x1) * (np.abs(df.x1) - df.v1*0.5)
 df['x0_kauempana'] = np.sign((np.abs(df['x0_end']) - np.abs(df['x1_end'])))                             
-df['overtake'] = (df['x0_kauempana'] == np.sign(df['ttcdiff']))
-df['overtake'] = df['overtake'].astype(int)
+df['overtake_oclusion'] = (df['x0_kauempana'] == np.sign(df['ttcdiff']))
+df['overtake_oclusion'] = df['overtake'].astype(int)
 
 
 df_orig = df.copy()
@@ -174,6 +174,7 @@ for con in conditions:
     df_d = pd.DataFrame([d])
     df_acc_std = pd.concat([df_acc_std,df_d],ignore_index=True)
     #df_acc_std = df_acc_std.append(d,ignore_index=True)
+
 
 
 

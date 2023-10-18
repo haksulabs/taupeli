@@ -126,30 +126,36 @@ df['x0_end'] = np.sign(df.x0) * (np.abs(df.x0) - df.v0*0.5)
 df['x1_end'] = np.sign(df.x1) * (np.abs(df.x1) - df.v1*0.5)
 df['x0_kauempana'] = np.sign((np.abs(df['x0_end']) - np.abs(df['x1_end'])))                             
 df['overtake_oclusion'] = (df['x0_kauempana'] == np.sign(df['ttcdiff']))
-df['overtake_oclusion'] = df['overtake'].astype(int)
+df['overtake_oclusion'] = df['overtake_oclusion'].astype(int)
 
 
 df_orig = df.copy()
 df_orig = df_orig[df_orig['n_trials']>20]
 
 df_acc_all = accuracy(df_orig)
+df_acc_all.to_csv('accuracy_all.csv', index=False)
 
 
 # filter trials with particular startposition differences
 df_same = df_orig[(np.abs(df_orig.x0)-np.abs(df_orig.x1) == 0)]
 df_differ = df_orig[(np.abs(df_orig.x0)-np.abs(df_orig.x1) != 0)]
 
-df_overtake = df_differ[df_differ['overtake']==1]
-df_notovertake = df_differ[df_differ['overtake']==0]
+df_overtake = df_differ[df_differ['overtake_oclusion']==1]
+df_notovertake = df_differ[df_differ['overtake_oclusion']==0]
 
 df_acc_same = accuracy(df_same)
 df_acc_differ = accuracy(df_differ)
+
+df_acc_same.to_csv('accuracy_same.csv', index=False)
+df_acc_differ.to_csv('accuracy_differ.csv', index=False)
 
 df_acc_overtake = accuracy(df_overtake)
 df_acc_notovertake = accuracy(df_notovertake)
 
 df_acc_all['startpos same'] = df_acc_same['accuracy']
 df_acc_all['startpos differ'] = df_acc_differ['accuracy']
+
+
 
 #df_acc_all contains all results, use this to calculate further
 

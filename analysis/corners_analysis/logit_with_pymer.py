@@ -10,7 +10,8 @@ run twice if first run produces dll error
 @author: t
 """
 import os
-os.environ['R_HOME'] = 'C:/Users/t/anaconda3/envs/pymer4/Lib/R'
+# os.environ['R_HOME'] = 'C:/Users/t/anaconda3/envs/pymer4/Lib/R'
+os.environ['R_HOME'] = 'h:/anaconda3/envs/pymer4/Lib/R'
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -23,7 +24,7 @@ from preprocess_taupelidata import corners_preprocess
 
 df = pd.read_csv('taupelidata_corners_pilotit.csv')
 orig_df = corners_preprocess(df)
-
+df = orig_df
 
 # con=23
 # print('condition ', con)
@@ -82,26 +83,68 @@ conditions = [12,34,23,41,24,13]
 
 
 
+# for con in conditions: 
+#     stag = 1
+    
+#     #df =orig_df[orig_df['condition'].isin(all)]
+#     df =orig_df[orig_df['condition'].isin([con])]
+#     df =df[df['stagger']==stag]            
+    
+#     print('condition:', con)
+#     #model = Lmer("correct ~   abs_ttcdiff_norm  +end_closer_xenddif + faster_first +  (1|name) ", data=df, family = 'binomial')
+#     #model = Lmer("correct ~    abs_ttcdiff_norm + tot_separation_norm + first_deltav + end_closer_xenddif + (1|name) ", data=df, family = 'binomial')
+#     #model = Lmer("correct ~    abs_ttcdiff_norm + tot_separation_norm + first_xenddif_norm + first_deltav_norm + (1|name) ", data=df, family = 'binomial')
+#     model = Lmer("correct ~    tot_separation_norm + delta_x_end_norm + delta_v_norm + end_ closer_first+ (1|name) ", data=df, family = 'binomial')
+#     #model = Lmer("correct ~   abs_ttcdiff_norm +  (1|name) ", data=df, family = 'binomial')
+#     #model = Lmer("correct ~   tot_separation_norm +  (1|name) ", data=df, family = 'binomial')
+#     #model = Lmer("correct ~   v_div_v_norm +  (1|name) ", data=df, family = 'binomial')
+#     #model = Lmer("correct ~  tot_separation_norm +  delta_x_norm + delta_v_norm + (1|name) ", data=df, family = 'binomial')
+#     #model = Lm("correct ~ abs_ttcdiff_norm+ tot_separation_norm +  totdif_norm +  delta_v_norm ", data=df, family = 'binomial')
+#     print(model.fit())
+
+
+dfres=pd.DataFrame(columns=conditions)
+    
 for con in conditions: 
+    
+    # calc with respect to the faster, without taking absolute values
+    
     #stag = 1
     
     #df =orig_df[orig_df['condition'].isin(all)]
     df =orig_df[orig_df['condition'].isin([con])]
-    #df =df[df['stagger']==stag]            
+    #df =df[df['stagger']==stag]       
+
+    #df = df[df['overtake_oclusion']==1]
     
     print('condition:', con)
     #model = Lmer("correct ~   abs_ttcdiff_norm  +end_closer_xenddif + faster_first +  (1|name) ", data=df, family = 'binomial')
     #model = Lmer("correct ~    abs_ttcdiff_norm + tot_separation_norm + first_deltav + end_closer_xenddif + (1|name) ", data=df, family = 'binomial')
     #model = Lmer("correct ~    abs_ttcdiff_norm + tot_separation_norm + first_xenddif_norm + first_deltav_norm + (1|name) ", data=df, family = 'binomial')
-    model = Lmer("correct ~    tot_separation_norm + delta_x_end_norm + delta_v_norm + end_ closer_first+ (1|name) ", data=df, family = 'binomial')
+    #model = Lmer("correct ~    abs_ttcdiff_norm + tot_separation_norm + delta_xf_end + delta_vf + stagger+ (1|name) ", data=df, family = 'binomial')
+    model = Lmer("correct ~    abs_ttcdiff_norm + tot_separation_norm + delta_xf_end + stagger*delta_vf +nostagger*delta_vf + (1|name) ", data=df, family = 'binomial')
     #model = Lmer("correct ~   abs_ttcdiff_norm +  (1|name) ", data=df, family = 'binomial')
     #model = Lmer("correct ~   tot_separation_norm +  (1|name) ", data=df, family = 'binomial')
     #model = Lmer("correct ~   v_div_v_norm +  (1|name) ", data=df, family = 'binomial')
     #model = Lmer("correct ~  tot_separation_norm +  delta_x_norm + delta_v_norm + (1|name) ", data=df, family = 'binomial')
     #model = Lm("correct ~ abs_ttcdiff_norm+ tot_separation_norm +  totdif_norm +  delta_v_norm ", data=df, family = 'binomial')
     print(model.fit())
-
     
+    results_for_con = model.coefs.Estimate
+    results_sig = model.coefs.Sig
+    
+    ns = str(con)+" sig"
+    dfres[con] = results_for_con
+    dfres[ns] = results_sig
+        
+       # calc with respect to the faster, without taking absolute values
+  
+    
+# use dummy variables for direction
+     
+#model = Lmer("correct ~    tot_separation_norm + delta_xf_end + delta_vf + d_12.0 + d_13.0 +  d_41.0 + d_23.0 + d_24.0 + d_34.0 + (1|name) ", data=df, family = 'binomial')
+#print(model.fit())
+
     
     
     

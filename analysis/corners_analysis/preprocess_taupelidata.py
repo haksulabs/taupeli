@@ -38,6 +38,8 @@ def corners_preprocess(df_orig):
     df['max_x'] = df[['abs_x0','abs_x1']].max(axis=1)
     df['min_x'] = df[['abs_x0','abs_x1']].min(axis=1)
     df['delta_x_end'] = df['max_x'] - df['min_x'] 
+    
+    
     df['delta_x_end_norm'] =scaler.fit_transform(df[['delta_x_end']])    
     df['x_div_x'] = df['min_x']/ df['max_x']
     df['x_div_x_norm'] = scaler.fit_transform(df[['x_div_x']])    
@@ -60,6 +62,7 @@ def corners_preprocess(df_orig):
     df['totdif_norm'] = scaler.fit_transform(df[['totdif']])
     df['stagger'] = df['startpos'].isin([15,51])
     df['stagger'] = df['stagger'].astype(int)
+    df['nostagger'] = (df['stagger']==0).astype(int)
     df['sigma'] = df['x0_end']**2 + df['x1_end']**2
     df['ttc_0'] =np.abs(df['x0']/df['v0'])
     df['ttc_1'] =np.abs(df['x1']/df['v1'])
@@ -76,6 +79,31 @@ def corners_preprocess(df_orig):
     df['first_xenddif'] = (df.end_closer_first-0.5)*2 * df.xenddif
     df['first_deltav_norm'] = scaler.fit_transform(df[['first_deltav']])
     df['first_xenddif_norm'] = scaler.fit_transform(df[['first_xenddif']])
+    
+    # positive number ->  the target is this much closer to the center than the other 
+    df['delta_xf_end'] = -df['x0_first'] * (df['abs_x0'] - df['abs_x1'] )
+    # target is this much faster
+    df['delta_vf'] = df['x0_first'] *( df['abs_v0'] - df['abs_v1'])
+    
+    df['delta_xf_end_norm'] = scaler.fit_transform(df[['delta_xf_end']])
+    df['delta_vf_norm'] = scaler.fit_transform(df[['delta_vf']])
+    
+    df['x0_kauempana'] = np.sign((np.abs(df['x0_end']) - np.abs(df['x1_end'])))
+    df['overtake_oclusion'] = (df['x0_kauempana'] == np.sign(df['ttcdiff']))
+    df['overtake_oclusion'] = df['overtake_oclusion'].astype(int)
+    
+    # this one is -1 or 1
+    df['closer_wins'] = df['x0_closer'] * df['x0_first']
+    
+    #dummy variables to represent directions
+    # 12 13 14 23 24 34   
+    #
+    dummies = pd.get_dummies(df['condition'], prefix='d')
+    df = pd.concat([df, dummies], axis=1)
+    
+    # faster object corner
+    #df['d_f2'] = (df['x0']<0).astype(int) * (df['y0']>0).astype(int)  * (df['ttcdiff']>0).astype(int)
+    
     
     return(df)
 

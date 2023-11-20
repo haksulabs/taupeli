@@ -11,7 +11,13 @@ run twice if first run produces dll error
 """
 import os
 # os.environ['R_HOME'] = 'C:/Users/t/anaconda3/envs/pymer4/Lib/R'
-os.environ['R_HOME'] = 'h:/anaconda3/envs/pymer4/Lib/R'
+if(os.name=='nt'):
+    os.environ['R_HOME'] = 'h:/anaconda3/envs/pymer4/Lib/R'
+elif(os.name=='posix'):
+    os.environ['R_HOME'] = '/usr/t/anaconda3/envs/pymer4/Lib/R'
+    
+         
+ 
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -71,17 +77,51 @@ df = orig_df
 
 # multi level models
 
-# print('--------------------------------------------')
-# print('multilevel model')
+# calculate correlations
 
-# model = Lmer("correct ~ abs_ttcdiff + (1|name) ", data=df, family = 'binomial')
+# con = 12
+# stag = 0
+# df =df[df['stagger']==stag]
+# df =orig_df[orig_df['condition'].isin([con])]
+# corr_matrix_absolutevalues = df[['abs_ttcdiff_norm', 'delta_x_end_norm', 'delta_v_norm','tot_separation_norm']].corr()
+# corr_matrix = df[['abs_ttcdiff_norm', 'delta_xf_end', 'delta_vf','tot_separation_norm']].corr()
 
-# print(model.fit())
+
 
 
 conditions = [12,34,23,41,24,13]
+preds = ['abs_ttcdiff_norm','tot_separation_norm','delta_xf_end_norm', 'delta_vf_norm','stagger','n_trials','reply_ttc_time','min_v','max_v']
 
 
+
+new_columns = conditions.copy()
+for con in conditions:   
+    new_columns.append(f"{con}s")
+dfres_simple = pd.DataFrame(index=preds, columns=new_columns)
+
+# simple regression models 
+
+    
+for con in conditions: 
+    
+
+    df =orig_df[orig_df['condition'].isin([con])]  
+    print('condition:', con)    
+    
+   
+    for pred in preds:
+        modelpara = "correct ~ " + pred + "  + (1|name) "        
+        model = Lmer(modelpara, data=df, family = 'binomial')
+        print(model.fit())
+        tempres_df = model.coefs.Estimate
+        tempres_sig = model.coefs.Sig
+        
+        sigloc = f"{con}s"
+        
+        dfres_simple.loc[pred, con] = tempres_df.loc[pred]
+        dfres_simple.loc[pred,sigloc] = tempres_sig[pred]
+        #dfres_simple[ns] = results_sig
+    
 
 # for con in conditions: 
 #     stag = 1
@@ -118,11 +158,13 @@ for con in conditions:
     #df = df[df['overtake_oclusion']==1]
     
     print('condition:', con)
-    #model = Lmer("correct ~   abs_ttcdiff_norm  +end_closer_xenddif + faster_first +  (1|name) ", data=df, family = 'binomial')
-    #model = Lmer("correct ~    abs_ttcdiff_norm + tot_separation_norm + first_deltav + end_closer_xenddif + (1|name) ", data=df, family = 'binomial')
-    #model = Lmer("correct ~    abs_ttcdiff_norm + tot_separation_norm + first_xenddif_norm + first_deltav_norm + (1|name) ", data=df, family = 'binomial')
-    #model = Lmer("correct ~    abs_ttcdiff_norm + tot_separation_norm + delta_xf_end + delta_vf + stagger+ (1|name) ", data=df, family = 'binomial')
-    model = Lmer("correct ~    abs_ttcdiff_norm + tot_separation_norm + delta_xf_end + stagger*delta_vf +nostagger*delta_vf + (1|name) ", data=df, family = 'binomial')
+    # absolute values
+    
+ #   model = Lmer("correct ~   tot_separation_norm + delta_x_end_norm + delta_v_norm + (1|name) ", data=df, family = 'binomial')
+    #model = Lmer("correct ~   abs_ttcdiff_norm + tot_separation_norm + delta_x_end_norm + delta_v_norm + (abs_ttcdiff_norm|name) ", data=df, family = 'binomial')
+    # sign matters
+    model = Lmer("correct ~    abs_ttcdiff_norm + tot_separation_norm + abs_ttcdiff_norm + delta_xf_end_norm + delta_vf_norm + stagger + (1|name) ", data=df, family = 'binomial')
+
     #model = Lmer("correct ~   abs_ttcdiff_norm +  (1|name) ", data=df, family = 'binomial')
     #model = Lmer("correct ~   tot_separation_norm +  (1|name) ", data=df, family = 'binomial')
     #model = Lmer("correct ~   v_div_v_norm +  (1|name) ", data=df, family = 'binomial')

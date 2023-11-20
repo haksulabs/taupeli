@@ -163,7 +163,7 @@ for con in conditions:
  #   model = Lmer("correct ~   tot_separation_norm + delta_x_end_norm + delta_v_norm + (1|name) ", data=df, family = 'binomial')
     #model = Lmer("correct ~   abs_ttcdiff_norm + tot_separation_norm + delta_x_end_norm + delta_v_norm + (abs_ttcdiff_norm|name) ", data=df, family = 'binomial')
     # sign matters
-    model = Lmer("correct ~    abs_ttcdiff_norm + tot_separation_norm + abs_ttcdiff_norm + delta_xf_end_norm + delta_vf_norm + stagger + (1|name) ", data=df, family = 'binomial')
+    model = Lmer("correct ~    abs_ttcdiff_norm + tot_separation_norm  + delta_xf_end_norm + delta_vf_norm + stagger + (1|name) ", data=df, family = 'binomial')
 
     #model = Lmer("correct ~   abs_ttcdiff_norm +  (1|name) ", data=df, family = 'binomial')
     #model = Lmer("correct ~   tot_separation_norm +  (1|name) ", data=df, family = 'binomial')

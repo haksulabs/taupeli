@@ -33,10 +33,15 @@ def corners_preprocess(df_orig):
     df['sum_v_norm'] = scaler.fit_transform(df[['sum_v']])
     df['x0_end'] = np.sign(df.x0) * (np.abs(df.x0) - df.abs_v0*0.5)
     df['x1_end'] = np.sign(df.x1) * (np.abs(df.x1) - df.abs_v1*0.5)
-    df['abs_x0'] = np.abs(df.x0) - df.abs_v0*0.5
-    df['abs_x1'] = np.abs(df.x1) - df.abs_v1*0.5
-    df['max_x'] = df[['abs_x0','abs_x1']].max(axis=1)
-    df['min_x'] = df[['abs_x0','abs_x1']].min(axis=1)
+    df['abs_x0_end'] = np.abs(df.x0) - df.abs_v0*0.5
+    df['abs_x1_end'] = np.abs(df.x1) - df.abs_v1*0.5
+    df['abs_x0_start'] = np.abs(df.x0) 
+    df['abs_x1_start'] = np.abs(df.x1)  
+    
+    
+    
+    df['max_x'] = df[['abs_x0_end','abs_x1_end']].max(axis=1)
+    df['min_x'] = df[['abs_x0_end','abs_x1_end']].min(axis=1)
     df['delta_x_end'] = df['max_x'] - df['min_x'] 
     
     
@@ -69,8 +74,11 @@ def corners_preprocess(df_orig):
     df['ttc_f'] = (np.sign(df['abs_v0']-df['abs_v1'])+1)*0.5*df['ttc_0'] + (np.sign(df['abs_v1']-df['abs_v0'])+1)*0.5*df['ttc_1']
     df['ttc_s'] = (np.sign(df['abs_v0']-df['abs_v1'])+1)*0.5*df['ttc_1'] + (np.sign(df['abs_v1']-df['abs_v0'])+1)*0.5*df['ttc_0']
     df['ttc_sum'] = df['ttc_0']+df['ttc_1']
-    df['x0_closer'] = np.sign(df.abs_x1 -df.abs_x0  )
-    df['x0_first'] = np.sign(df.ttcdiff)                   
+    df['x0_closer'] = np.sign(df.abs_x1_end -df.abs_x0_end  )
+    df['x0_first'] = np.sign(df.ttcdiff)  
+    
+    df['stag1'] = df['x0_first'] *  np.sign((  df['abs_x1_start'] - df['abs_x0_start'] ))
+                 
     df['end_closer_first'] = abs(df.x0_closer + df.x0_first)*0.5
     df['x0_faster'] = np.sign(df.abs_v0 -df.abs_v1  )
     df['faster_first'] =  abs(df.x0_faster + df.x0_first)*0.5
@@ -80,8 +88,9 @@ def corners_preprocess(df_orig):
     df['first_deltav_norm'] = scaler.fit_transform(df[['first_deltav']])
     df['first_xenddif_norm'] = scaler.fit_transform(df[['first_xenddif']])
     
+    
     # positive number ->  the target is this much closer to the center than the other 
-    df['delta_xf_end'] = -df['x0_first'] * (df['abs_x0'] - df['abs_x1'] )
+    df['delta_xf_end'] = -df['x0_first'] * (df['abs_x0_end'] - df['abs_x1_end'] )
     # target is this much faster
     df['delta_vf'] = df['x0_first'] *( df['abs_v0'] - df['abs_v1'])
     
@@ -99,7 +108,11 @@ def corners_preprocess(df_orig):
     # 12 13 14 23 24 34   
     #
     dummies = pd.get_dummies(df['condition'], prefix='d')
+    
+    
     df = pd.concat([df, dummies], axis=1)
+    
+    df['d_updown'] = df['d_12.0'] + df['d_34.0']
     
     # faster object corner
     #df['d_f2'] = (df['x0']<0).astype(int) * (df['y0']>0).astype(int)  * (df['ttcdiff']>0).astype(int)

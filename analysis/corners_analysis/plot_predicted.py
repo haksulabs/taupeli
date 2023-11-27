@@ -9,9 +9,10 @@ import os
 # os.environ['R_HOME'] = 'C:/Users/t/anaconda3/envs/pymer4/Lib/R'
 if(os.name=='nt'):
     os.environ['R_HOME'] = 'h:/anaconda3/envs/pymer4/Lib/R'
+    modelsavepath = 'G:/cachet/taupeli_models'
 elif(os.name=='posix'):
-    os.environ['R_HOME'] = '/usr/t/anaconda3/envs/pymer4/Lib/R'
-    
+    os.environ['R_HOME'] = '/Users/t/opt/anaconda3/envs/pymer4/lib/R'
+    modelsavepath = '/Users/t/cachet/'
          
  
 import numpy as np
@@ -36,7 +37,7 @@ df = orig_df
 #model_baseline_intercept.fit()
 
 
-model = load_model('model_stagger_signed_combcond_randstag.joblib')
+model = load_model(modelsavepath + 'model_stagger_signed_combcond_randstag.joblib')
 
 
 # predict dataset 

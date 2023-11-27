@@ -7,18 +7,20 @@ Created on Mon Nov 27 15:10:54 2023
 
 import os
 # os.environ['R_HOME'] = 'C:/Users/t/anaconda3/envs/pymer4/Lib/R'
+
+modelsavepath=''
 if(os.name=='nt'):
-    os.environ['R_HOME'] = 'h:/anaconda3/envs/pymer4/Lib/R'
+    os.environ['R_HOME'] = 'h:/anaconda3/envs/pymer4/Lib/R'    
+    modelsavepath = 'G:/cachet/taupeli_models/'
+
 elif(os.name=='posix'):
-    os.environ['R_HOME'] = '/usr/t/anaconda3/envs/pymer4/Lib/R'
+    os.environ['R_HOME'] = '/Users/t/opt/anaconda3/envs/pymer4/lib/R'
+    modelsavepath = '/users/t/cachet/'
     
          
  
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
-from pymer4.utils import get_resource_path
-from pymer4.models import Lm
 from pymer4.models import Lmer
 from pymer4.io import save_model, load_model
 
@@ -33,7 +35,6 @@ def summary_to_df(model,oldsummary_df):
     model_df = pd.DataFrame([model_data])
     newsummary_df = pd.concat([oldsummary_df, model_df], ignore_index=True)    
     return newsummary_df
-
 
 df = pd.read_csv('taupelidata_corners_pilotit.csv')
 orig_df = corners_preprocess(df)
@@ -51,13 +52,14 @@ formulas = {
 models ={}
 summary_df = pd.DataFrame()
 for k, v in formulas.items():
-    current_filename = 'model_' + k + '.joblib'
+    current_filename = modelsavepath + 'model_' + k + '.joblib'
     try:
-        current_model = load_model('model_baseline.joblib')
+        current_model = load_model(current_filename)
         exists = 1
+        #viilaus todo: tarkista että malli on sama.. 
     except:
         exists = 0
-    exists = 0
+        
     if( not exists): 
         current_model = Lmer(v, data=df, family = 'binomial')
         current_model.fit()
@@ -66,14 +68,4 @@ for k, v in formulas.items():
     summary_df = summary_to_df(current_model,summary_df)
     models[k] = current_model
     
-
-
-    
-#model_baseline = Lmer("correct ~  0 + abs_ttcdiff + (0 + abs_ttcdiff|name) ", data=df, family = 'binomial')
-#model_baseline.fit()
-
-#summary_df = pd.DataFrame()
-
-#summary_df = summary_to_df(model_baseline,summary_df)
-
 

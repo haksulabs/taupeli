@@ -30,16 +30,17 @@ elif(os.name=='posix'):
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from pymer4.utils import get_resource_path
+
 from pymer4.models import Lm
 from pymer4.models import Lmer
 
-from sklearn.preprocessing import StandardScaler
+
 from preprocess_taupelidata import corners_preprocess
 
 df = pd.read_csv('taupelidata_corners_pilotit.csv')
 orig_df = corners_preprocess(df)
-df = orig_df
+df = orig_df.copy()
+
 
 
 preds = ['abs_ttcdiff_norm','tot_separation_norm','delta_xf_end_norm', 'delta_vf_norm','stagger','n_trials','reply_ttc_time','min_v','max_v']
@@ -54,9 +55,40 @@ preds = ['abs_ttcdiff_norm','tot_separation_norm','delta_xf_end_norm', 'delta_vf
 # model_stagger_signed = Lmer("correct ~    abs_ttcdiff + 0 + stag1 + (abs_ttcdiff + 0 +stag1|name) ", data=df, family = 'binomial')
 # model_stagger_signed.fit()
 
-model_stagger_signed_cond = Lmer("correct ~    abs_ttcdiff + 0  + stag1:d_12.0 +stag1:d_34.0 + stag1:d_23.0 + stag1:d_41.0 + stag1:d_24.0  + stag1:d_13.0 + (abs_ttcdiff + 0 +stag1|name) ", data=df, family = 'binomial')
-model_stagger_signed_cond.fit()
-print(model_stagger_signed_cond.summary())
+# model_stagger_signed_cond = Lmer("correct ~    abs_ttcdiff + 0  + stag1:d_12 +stag1:d_34 + stag1:d_23 + stag1:d_41 + stag1:d_24  + stag1:d_13 + (abs_ttcdiff + 0 +stag1|name) ", data=df, family = 'binomial')
+# model_stagger_signed_cond.fit()
+# print(model_stagger_signed_cond.summary())
 
-#model_stagger.fit()
+model_stagger_signed_combcond1 = Lmer("correct ~    abs_ttcdiff + stag1:d_updown +stag1:d_leftright + stag1:d_diagonal +  (0 + abs_ttcdiff +stag1|name) ", data=df, family = 'binomial')
+model_stagger_signed_combcond1.fit()
+print(model_stagger_signed_combcond1.summary())
+
+
+model_stagger_signed_combcond2 = Lmer("correct ~    abs_ttcdiff + delta_xf_end:d_updown +delta_xf_end:d_leftright + delta_xf_end:d_diagonal +  (0 + abs_ttcdiff + delta_xf_end|name) ", data=df, family = 'binomial')
+model_stagger_signed_combcond2.fit()
+print(model_stagger_signed_combcond2.summary())
+
+
+
+
+# kysymys:  onko alku lähempi  enempi vai vähempi tärkee kuin lopussa lähempi
+
+# model_stagstart_vs_end1 = Lmer("correct ~  0 + abs_ttcdiff  +stag1 + (0 + abs_ttcdiff+stag1|name) ", data=df, family = 'binomial')
+# model_stagstart_vs_end1.fit()
+# print(model_stagstart_vs_end1.summary())
+
+# model_stagstart_vs_end2 = Lmer("correct ~  0 + abs_ttcdiff  +delta_xf_end + (0 + abs_ttcdiff+delta_xf_end|name) ", data=df, family = 'binomial')
+# model_stagstart_vs_end2.fit()
+# print(model_stagstart_vs_end2.summary())
+# xenddif better by aic -700
+
+
+
+
+
+
+
+
+
+
 

@@ -91,6 +91,7 @@ def corners_preprocess(df_orig):
     
     # positive number ->  the target is this much closer to the center than the other 
     df['delta_xf_end'] = -df['x0_first'] * (df['abs_x0_end'] - df['abs_x1_end'] )
+    
     # target is this much faster
     df['delta_vf'] = df['x0_first'] *( df['abs_v0'] - df['abs_v1'])
     
@@ -107,12 +108,14 @@ def corners_preprocess(df_orig):
     #dummy variables to represent directions
     # 12 13 14 23 24 34   
     #
-    dummies = pd.get_dummies(df['condition'], prefix='d')
+    dummies = pd.get_dummies(df['condition'].astype(int), prefix='d')
     
     
     df = pd.concat([df, dummies], axis=1)
     
-    df['d_updown'] = df['d_12.0'] + df['d_34.0']
+    df['d_updown'] = df['d_12'] + df['d_34']
+    df['d_leftright'] = df['d_23'] + df['d_41'] 
+    df['d_diagonal'] = df['d_13'] + df['d_24']
     
     # faster object corner
     #df['d_f2'] = (df['x0']<0).astype(int) * (df['y0']>0).astype(int)  * (df['ttcdiff']>0).astype(int)

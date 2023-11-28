@@ -16,6 +16,17 @@ def corners_preprocess(df_orig):
 #preprocess and precalculate stuff
     scaler = StandardScaler()
     df = df_orig[df_orig['n_trials'] >20].copy()
+    
+    df['x0_first'] = np.sign(df.ttcdiff)
+    df['x0_first_bool'] = 0.5*(df['x0_first']+1)
+    df['xf'] = df['x0_first_bool'] * df['x0']  - (df['x0_first_bool']-1)*df['x1']
+    df['xs'] = df['x0_first_bool'] * df['x1']  - (df['x0_first_bool']-1)*df['x0']
+    df['vf'] = df['x0_first_bool'] * df['v0']  - (df['x0_first_bool']-1)*df['v1']
+    df['vs'] = df['x0_first_bool'] * df['v1']  - (df['x0_first_bool']-1)*df['v0']
+    df['abs_vf'] = np.abs(df.vf)
+    df['abs_vs'] = np.abs(df.vs)
+    
+    
     df['abs_ttcdiff'] = np.abs(df.ttcdiff)
     df['abs_ttcdiff_norm'] = scaler.fit_transform(df[['abs_ttcdiff']])
     df['minttc_norm'] = scaler.fit_transform(df[['minttc']])
@@ -75,9 +86,11 @@ def corners_preprocess(df_orig):
     df['ttc_s'] = (np.sign(df['abs_v0']-df['abs_v1'])+1)*0.5*df['ttc_1'] + (np.sign(df['abs_v1']-df['abs_v0'])+1)*0.5*df['ttc_0']
     df['ttc_sum'] = df['ttc_0']+df['ttc_1']
     df['x0_closer'] = np.sign(df.abs_x1_end -df.abs_x0_end  )
-    df['x0_first'] = np.sign(df.ttcdiff)  
+    
     
     df['stag1'] = df['x0_first'] *  np.sign((  df['abs_x1_start'] - df['abs_x0_start'] ))
+    
+    df['delta_x_mean'] =  0.5 * ( df['x0_first'] *  (  df['abs_x1_start'] - df['abs_x0_start'] ) +  df['x0_first'] * (  df['abs_x1_end'] - df['abs_x0_end'] ) )
                  
     df['end_closer_first'] = abs(df.x0_closer + df.x0_first)*0.5
     df['x0_faster'] = np.sign(df.abs_v0 -df.abs_v1  )

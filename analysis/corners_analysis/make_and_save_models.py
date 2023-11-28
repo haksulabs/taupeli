@@ -46,7 +46,10 @@ formulas = {
     'stagger_signed_combcond' : 'correct ~ 0 + abs_ttcdiff + stag1:d_updown +stag1:d_leftright + stag1:d_diagonal + (0 + abs_ttcdiff|name) ',
     'stagger_signed_combcond_randstag' : 'correct ~ 0 + abs_ttcdiff + stag1:d_updown +stag1:d_leftright + stag1:d_diagonal + (0 + abs_ttcdiff +stag1|name) ',
     'delta_xf_end_signed_combcond' : 'correct ~ 0 + abs_ttcdiff + delta_xf_end:d_updown +delta_xf_end:d_leftright + delta_xf_end:d_diagonal +  (0 + abs_ttcdiff + delta_xf_end|name)',
-    'stagger_vs_delta_xf' : 'correct ~ 0 + abs_ttcdiff + stag1:d_updown + stag1:d_leftright + stag1:d_diagonal + delta_xf_end:d_updown +delta_xf_end:d_leftright + delta_xf_end:d_diagonal + (0 + abs_ttcdiff|name) '
+    'stagger_vs_delta_xf' : 'correct ~ 0 + abs_ttcdiff + stag1:d_updown + stag1:d_leftright + stag1:d_diagonal + delta_xf_end:d_updown +delta_xf_end:d_leftright + delta_xf_end:d_diagonal + (0 + abs_ttcdiff|name) ',
+    'delta_x_mean_signed_combcond' : 'correct ~ 0 + abs_ttcdiff + delta_x_mean:d_updown +delta_x_mean:d_leftright + delta_x_mean:d_diagonal +  (0 + abs_ttcdiff + delta_x_mean|name)',
+    'more_fixed_effects' : 'correct ~ 0 + abs_ttcdiff + tot_separation + delta_xf_end + delta_vf +  stag1:d_updown +stag1:d_leftright + stag1:d_diagonal + (0 + abs_ttcdiff +stag1|name)',
+    'even_more_fixed_effects' : 'correct ~ 0 + abs_ttcdiff + tot_separation + delta_x_mean + delta_xf_end + delta_vf + abs_vf + abs_vs +  stag1:d_updown +stag1:d_leftright + stag1:d_diagonal + (0 + abs_ttcdiff +stag1|name)'
     }
 
 models ={}
@@ -56,7 +59,12 @@ for k, v in formulas.items():
     try:
         current_model = load_model(current_filename)
         exists = 1
-        #viilaus todo: tarkista että malli on sama.. 
+        
+        #liimaa: tarkista että malli on sama.. 
+        test_model = Lmer(v, data=df, family = 'binomial')
+        if(test_model.formula != current_model.formula):
+            print('model changed, fitting new: ' + k)
+            exists=0
     except:
         exists = 0
         

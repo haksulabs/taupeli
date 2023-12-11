@@ -14,6 +14,9 @@ from scipy.special import logit, expit
 
 def corners_preprocess(df_orig):
 #preprocess and precalculate stuff
+
+#xf = target ( x first)
+#xs = second ( x second)
     scaler = StandardScaler()
     df = df_orig[df_orig['n_trials'] >20].copy()
     
@@ -25,6 +28,10 @@ def corners_preprocess(df_orig):
     df['vs'] = df['x0_first_bool'] * df['v1']  - (df['x0_first_bool']-1)*df['v0']
     df['abs_vf'] = np.abs(df.vf)
     df['abs_vs'] = np.abs(df.vs)
+    df['faster_first'] = (df['abs_vf'] > df['abs_vs']).astype(int)
+    df['faster_overtake'] = (abs(df['xf']) > abs(df['xs'])).astype(int)
+    df['faster_noovertake'] = ((abs(df['xf']) < abs(df['xs'])) & (df['abs_vs'] > df['abs_vf'])).astype(int)
+    
     
     
     df['abs_ttcdiff'] = np.abs(df.ttcdiff)
@@ -94,7 +101,7 @@ def corners_preprocess(df_orig):
                  
     df['end_closer_first'] = abs(df.x0_closer + df.x0_first)*0.5
     df['x0_faster'] = np.sign(df.abs_v0 -df.abs_v1  )
-    df['faster_first'] =  abs(df.x0_faster + df.x0_first)*0.5
+    
     df['end_closer_xenddif'] = (df.end_closer_first-0.5)*2 * df.xenddif
     df['first_deltav'] = (df.faster_first-0.5)*2 * df.delta_v
     df['first_xenddif'] = (df.end_closer_first-0.5)*2 * df.xenddif

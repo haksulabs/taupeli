@@ -12,6 +12,7 @@ import scipy.stats as stats
 from sklearn.preprocessing import StandardScaler
 
 
+
 scaler = StandardScaler()
 
 

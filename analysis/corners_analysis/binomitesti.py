@@ -27,7 +27,7 @@ df = orig_df[(orig_df['stag1']==1)]
 
 overall_success_rate = df['correct'].mean()
 
-conditions = ['d_updown','d_leftright','d_diagonal']
+conditions = ['d_updown','d_leftright']
 results={}
 for c in conditions:
     cond_df = df[df[c]==1]

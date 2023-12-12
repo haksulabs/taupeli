@@ -37,8 +37,8 @@ df = orig_df
 #model_baseline_intercept.fit()
 
 
-model = load_model(modelsavepath + 'model_stagger_signed_combcond_randstag.joblib')
-
+#model = load_model(modelsavepath + 'model_stagger_signed_combcond_randstag.joblib')
+model = load_model(modelsavepath + 'model_stagger_cat.joblib' )
 
 # predict dataset 
 
@@ -50,18 +50,25 @@ conds = [cond1,cond2,cond3]
 
 
 predict_df=pd.DataFrame()
+# for s in stags:
+#     for c in conds:        
+#         x_values = np.linspace(df['abs_ttcdiff'].min(), df['abs_ttcdiff'].max(), 100)
+#         pre_df = pd.DataFrame({'abs_ttcdiff': x_values, 'stag1':s, 'd_updown':c['d_updown'] , 'd_leftright':c['d_leftright'], 'd_diagonal': c['d_diagonal'] })
+#         predict_df = pd.concat([predict_df,pre_df], ignore_index=True)
+
 for s in stags:
     for c in conds:        
         x_values = np.linspace(df['abs_ttcdiff'].min(), df['abs_ttcdiff'].max(), 100)
-        pre_df = pd.DataFrame({'abs_ttcdiff': x_values, 'stag1':s, 'd_updown':c['d_updown'] , 'd_leftright':c['d_leftright'], 'd_diagonal': c['d_diagonal'] })
-        predict_df = pd.concat([predict_df,pre_df], ignore_index=True)
-                        
+        pre_df = pd.DataFrame({'abs_ttcdiff': x_values, 'stag1_cat':str(s), 'stag1':s, 'd_updown':c['d_updown'] , 'd_leftright':c['d_leftright'], 'd_diagonal': c['d_diagonal'] })
+        predict_df = pd.concat([predict_df,pre_df], ignore_index=True)                        
+        
+        
 # interactions
 predict_df['stag1:d_updown'] = predict_df['stag1'] *  predict_df['d_updown']
 predict_df['stag1:d_leftright'] = predict_df['stag1'] *  predict_df['d_leftright']
 predict_df['stag1:d_diagonal'] = predict_df['stag1'] *  predict_df['d_diagonal']
 
-predicted_accuracies = pd.DataFrame(model.predict(predict_df, use_rfx=False, verify_predictions=False, verbose=True))
+predicted_accuracies = pd.DataFrame(model.predict(predict_df, use_rfx=False, verify_predictions=False, verbose=True, skip_data_checks=True))
 
 predict_df['predicted_accuracy'] = predicted_accuracies
 

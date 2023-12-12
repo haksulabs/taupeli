@@ -29,7 +29,7 @@ df = orig_df
 
 df = df[df['name'].str.contains('kh')]
 
-df = df[df['stag1']==1]
+df = df[df['stag1']==-1]
 
 df['merged_condition']=''
 #df['merged_condition'] = ('updown' * #df['d_updown']) + ('leftright' * df['d_leftrigt'])

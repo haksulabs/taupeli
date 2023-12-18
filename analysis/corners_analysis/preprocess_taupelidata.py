@@ -19,6 +19,7 @@ def corners_preprocess(df_orig):
 #xs = second ( x second)
     scaler = StandardScaler()
     df = df_orig[df_orig['n_trials'] >20].copy()
+    df = df[df['name'].str.contains('kh') ]
     
     df['x0_first'] = np.sign(df.ttcdiff)
     df['x0_first_bool'] = 0.5*(df['x0_first']+1)
@@ -30,6 +31,7 @@ def corners_preprocess(df_orig):
     df['abs_vs'] = np.abs(df.vs)
 
     df['faster_first'] = (df['abs_vf'] > df['abs_vs']).astype(int)
+
     df['faster_overtake'] = (abs(df['xf']) > abs(df['xs'])).astype(int)
     df['faster_noovertake'] = ((abs(df['xf']) < abs(df['xs'])) & (df['abs_vs'] > df['abs_vf'])).astype(int)
     df['abs_xf'] = np.abs(df['xf'])
@@ -142,7 +144,13 @@ def corners_preprocess(df_orig):
     df['d_updown'] = df['d_12'] + df['d_34']
     df['d_leftright'] = df['d_23'] + df['d_41'] 
     df['d_diagonal'] = df['d_13'] + df['d_24']
-    
+    dumnames = [
+        df['d_updown'] == 1,
+        df['d_leftright'] == 1,
+        df['d_diagonal'] == 1
+        ]
+    choices = ['updown', 'leftright', 'diagonal']
+    df['comp_cond'] = np.select(dumnames, choices, default=np.nan)
     # faster object corner
     #df['d_f2'] = (df['x0']<0).astype(int) * (df['y0']>0).astype(int)  * (df['ttcdiff']>0).astype(int)
     

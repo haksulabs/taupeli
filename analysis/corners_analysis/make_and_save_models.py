@@ -37,27 +37,47 @@ def summary_to_df(model,oldsummary_df):
     return newsummary_df
 
 df = pd.read_csv('taupelidata_corners_pilotit.csv')
+df = df[df['name'].str.contains('kh')]
+
 orig_df = corners_preprocess(df)
 df = orig_df
 
 
-formulas = {
-    'baseline': 'correct ~  0 + abs_ttcdiff + (0 + abs_ttcdiff|name)',
-    'stagger_signed_combcond' : 'correct ~ 0 + abs_ttcdiff + stag1:d_updown +stag1:d_leftright + stag1:d_diagonal + (0 + abs_ttcdiff|name) ',
-    'stagger_signed_combcond_randstag' : 'correct ~ 0 + abs_ttcdiff + stag1:d_updown +stag1:d_leftright + stag1:d_diagonal + (0 + abs_ttcdiff +stag1|name) ',
-    'delta_xf_end_signed_combcond' : 'correct ~ 0 + abs_ttcdiff + delta_xf_end:d_updown +delta_xf_end:d_leftright + delta_xf_end:d_diagonal +  (0 + abs_ttcdiff + delta_xf_end|name)',
-    'stagger_vs_delta_xf' : 'correct ~ 0 + abs_ttcdiff + stag1:d_updown + stag1:d_leftright + stag1:d_diagonal + delta_xf_end:d_updown +delta_xf_end:d_leftright + delta_xf_end:d_diagonal + (0 + abs_ttcdiff|name) ',
-    'delta_x_mean_signed_combcond' : 'correct ~ 0 + abs_ttcdiff + delta_x_mean:d_updown +delta_x_mean:d_leftright + delta_x_mean:d_diagonal +  (0 + abs_ttcdiff + delta_x_mean|name)',
-    'more_fixed_effects' : 'correct ~ 0 + abs_ttcdiff + tot_separation + delta_xf_end + delta_vf +  stag1:d_updown +stag1:d_leftright + stag1:d_diagonal + (0 + abs_ttcdiff +stag1|name)',
-    'even_more_fixed_effects' : 'correct ~ 0 + abs_ttcdiff + tot_separation + delta_x_mean + delta_xf_end + delta_vf + abs_vf + abs_vs +  stag1:d_updown +stag1:d_leftright + stag1:d_diagonal + (0 + abs_ttcdiff +stag1|name)',
-    'dx' : 'correct ~ 1 + delta_xf_end + (1 + delta_xf_end|name)',
-    'dx_cond' : 'correct ~ 1 + stag1 + delta_xf_end:d_updown +delta_xf_end:d_leftright + delta_xf_end:d_diagonal + (1 + delta_xf_end+stag1|name) ',
-    'only_stag' : 'correct ~ 1 + stag1 + (1+stag1|name)',
-    'only_meanx' : 'correct ~ 1 + delta_x_mean + (1 + delta_x_mean|name)',
-    'all_params' : 'correct ~ 1 + abs_xf*abs_vf * abs_xs*abs_vs + (1|name)  ',
-    'stagger_cat' : 'correct ~ 0 + abs_ttcdiff + stag1_cat:d_updown +stag1_cat:d_leftright + stag1_cat:d_diagonal + (0 + abs_ttcdiff + stag1_cat:d_updown +stag1_cat:d_leftright + stag1_cat:d_diagonal|name) ',
-    'stagger_cat_comp' : 'correct ~ 0 + abs_ttcdiff + stag1_cat + (0 + abs_ttcdiff + stag1_cat |name ) '
-    }
+# formulas = {
+#     'baseline': 'correct ~  0 + abs_ttcdiff + (0 + abs_ttcdiff|name)',
+#     'stagger_signed_combcond' : 'correct ~ 0 + abs_ttcdiff + stag1:d_updown +stag1:d_leftright + stag1:d_diagonal + (0 + abs_ttcdiff|name) ',
+#     'stagger_signed_combcond_randstag' : 'correct ~ 0 + abs_ttcdiff + stag1:d_updown +stag1:d_leftright + stag1:d_diagonal + (0 + abs_ttcdiff +stag1|name) ',
+#     'delta_xf_end_signed_combcond' : 'correct ~ 0 + abs_ttcdiff + delta_xf_end:d_updown +delta_xf_end:d_leftright + delta_xf_end:d_diagonal +  (0 + abs_ttcdiff + delta_xf_end|name)',
+#     'stagger_vs_delta_xf' : 'correct ~ 0 + abs_ttcdiff + stag1:d_updown + stag1:d_leftright + stag1:d_diagonal + delta_xf_end:d_updown +delta_xf_end:d_leftright + delta_xf_end:d_diagonal + (0 + abs_ttcdiff|name) ',
+#     'delta_x_mean_signed_combcond' : 'correct ~ 0 + abs_ttcdiff + delta_x_mean:d_updown +delta_x_mean:d_leftright + delta_x_mean:d_diagonal +  (0 + abs_ttcdiff + delta_x_mean|name)',
+#     'more_fixed_effects' : 'correct ~ 0 + abs_ttcdiff + tot_separation + delta_xf_end + delta_vf +  stag1:d_updown +stag1:d_leftright + stag1:d_diagonal + (0 + abs_ttcdiff +stag1|name)',
+#     'even_more_fixed_effects' : 'correct ~ 0 + abs_ttcdiff + tot_separation + delta_x_mean + delta_xf_end + delta_vf + abs_vf + abs_vs +  stag1:d_updown +stag1:d_leftright + stag1:d_diagonal + (0 + abs_ttcdiff +stag1|name)',
+#     'dx' : 'correct ~ 1 + delta_xf_end + (1 + delta_xf_end|name)',
+#     'dx_cond' : 'correct ~ 1 + stag1 + delta_xf_end:d_updown +delta_xf_end:d_leftright + delta_xf_end:d_diagonal + (1 + delta_xf_end+stag1|name) ',
+#     'only_stag' : 'correct ~ 1 + stag1 + (1+stag1|name)',
+#     'only_meanx' : 'correct ~ 1 + delta_x_mean + (1 + delta_x_mean|name)',
+#     'all_params' : 'correct ~ 1 + abs_xf*abs_vf * abs_xs*abs_vs + (1|name)  ',
+#     'stagger_cat' : 'correct ~ 0 + abs_ttcdiff + stag1_cat:d_updown +stag1_cat:d_leftright + stag1_cat:d_diagonal + (0 + abs_ttcdiff + stag1_cat:d_updown +stag1_cat:d_leftright + stag1_cat:d_diagonal|name) ',
+#     'stagger_cat_comp' : 'correct ~ 0 + abs_ttcdiff + stag1_cat + (0 + abs_ttcdiff + stag1_cat |name ) ',
+#     'stagger_cat_zero' : """correct ~ 0 + abs_ttcdiff + stag1_1:d_updown +    stag1_0:d_updown +    stag1__1:d_updown
+#                                                      +  stag1_1:d_leftright + stag1_0:d_leftright + stag1__1:d_leftright 
+#                                                       + stag1_1:d_diagonal +  stag1_0:d_diagonal +  stag1__1:d_diagonal"""
+
+#     }
+
+# formulas = {'stagger_cat_zero' : """correct ~ 0   + stag1_1:d_updown + d_updown:abs_ttcdiff  + stag1__1:d_updown
+#                                                       +  stag1_1:d_leftright + d_leftright:abs_ttcdiff+  stag1__1:d_leftright 
+#                                                        + stag1_1:d_diagonal +  d_diagonal:abs_ttcdiff +  stag1__1:d_diagonal 
+#                                                        + (1 |name) """.replace('\n', '')
+ #                                                      }
+
+formulas = {'stagger_cat_zero' : """correct ~ 0   +     stag1:d_updown +    d_updown:abs_ttcdiff  
+                                                      + stag1:d_leftright + d_leftright:abs_ttcdiff  
+                                                       +stag1:d_diagonal +  d_diagonal:abs_ttcdiff 
+                                                       + (1 |name) """.replace('\n', '')
+                                                       }
+
+
 
 models ={}
 summary_df = pd.DataFrame()

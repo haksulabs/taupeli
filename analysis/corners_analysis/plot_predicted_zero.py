@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Dec 12 13:13:54 2023
+
+@author: t
+"""
+
 # -*- coding: utf-8 -*-
 """
 Created on Sun Nov 26 20:08:58 2023
@@ -61,7 +69,7 @@ predict_df=pd.DataFrame()
 for s in stags:
     for c in conds:        
         x_values = np.linspace(df['abs_ttcdiff'].min(), df['abs_ttcdiff'].max(), 100)
-        pre_df = pd.DataFrame({'abs_ttcdiff': x_values, 'stag1_cat':str(s), 'stag1':s, 'd_updown':c['d_updown'] , 'd_leftright':c['d_leftright'], 'd_diagonal': c['d_diagonal'] })
+        pre_df = pd.DataFrame({'abs_ttcdiff': x_values, 'stag1_1':int(s==1),'stag1_0':int(s==0), 'stag1__1':int(s==-1)  , 'stag1_cat':str(s), 'stag1':s, 'd_updown':c['d_updown'] , 'd_leftright':c['d_leftright'], 'd_diagonal': c['d_diagonal'] })
         predict_df = pd.concat([predict_df,pre_df], ignore_index=True)                        
         
         

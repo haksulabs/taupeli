@@ -28,10 +28,12 @@ def corners_preprocess(df_orig):
     df['vs'] = df['x0_first_bool'] * df['v1']  - (df['x0_first_bool']-1)*df['v0']
     df['abs_vf'] = np.abs(df.vf)
     df['abs_vs'] = np.abs(df.vs)
+
     df['faster_first'] = (df['abs_vf'] > df['abs_vs']).astype(int)
     df['faster_overtake'] = (abs(df['xf']) > abs(df['xs'])).astype(int)
     df['faster_noovertake'] = ((abs(df['xf']) < abs(df['xs'])) & (df['abs_vs'] > df['abs_vf'])).astype(int)
-    
+    df['abs_xf'] = np.abs(df['xf'])
+    df['abs_xs'] = np.abs(df['xs'])
     
     
     df['abs_ttcdiff'] = np.abs(df.ttcdiff)
@@ -96,6 +98,10 @@ def corners_preprocess(df_orig):
     
     
     df['stag1'] = df['x0_first'] *  np.sign((  df['abs_x1_start'] - df['abs_x0_start'] ))
+    df['stag1_cat'] = pd.Categorical(df.stag1.astype(int))
+    df['stag1_1'] = (df['stag1']==1).astype(int)
+    df['stag1_0'] = (df['stag1']==0).astype(int)
+    df['stag1__1'] = (df['stag1']==-1).astype(int)
     
     df['delta_x_mean'] =  0.5 * ( df['x0_first'] *  (  df['abs_x1_start'] - df['abs_x0_start'] ) +  df['x0_first'] * (  df['abs_x1_end'] - df['abs_x0_end'] ) )
                  

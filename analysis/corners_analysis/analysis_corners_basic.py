@@ -143,8 +143,11 @@ df_acc_all.to_csv('accuracy_all.csv', index=False)
 
 # filter trials with particular startposition differences
 df_same = df_orig[(np.abs(df_orig.x0)-np.abs(df_orig.x1) == 0)]
+<<<<<<< Updated upstream
 df_differ = df_orig[ df['stag1'] ==1]
 
+=======
+>>>>>>> Stashed changes
 #df_differ = df_orig[(np.abs(df_orig.x0)-np.abs(df_orig.x1) != 0)]
 
 df_overtake = df_differ[df_differ['overtake_oclusion']==1]

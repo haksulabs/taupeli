@@ -74,7 +74,11 @@ df = orig_df
 formulas = {'stagger_cat_zero' : """correct ~ 0   +     stag1:d_updown +    d_updown:abs_ttcdiff  
                                                       + stag1:d_leftright + d_leftright:abs_ttcdiff  
                                                        +stag1:d_diagonal +  d_diagonal:abs_ttcdiff 
-                                                       + (1 |name) """.replace('\n', '')
+                                                       + (1 |name) """.replace('\n', ''),
+            'delta_fs_end' : """correct ~ 0   +     delta_fs_end:d_updown +    d_updown:abs_ttcdiff  
+                                                                 + delta_fs_end:d_leftright + d_leftright:abs_ttcdiff  
+                                                                  +delta_fs_end:d_diagonal +  d_diagonal:abs_ttcdiff 
+                                                                  + (1 |name) """.replace('\n', '')                                            
                                                        }
 
 

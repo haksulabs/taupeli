@@ -29,6 +29,9 @@ def corners_preprocess(df_orig):
     df['vs'] = df['x0_first_bool'] * df['v1']  - (df['x0_first_bool']-1)*df['v0']
     df['abs_vf'] = np.abs(df.vf)
     df['abs_vs'] = np.abs(df.vs)
+    df['xf_end'] = np.abs(df['xf'])-df['abs_vf']*0.5
+    df['xs_end'] = np.abs(df['xs'])-df['abs_vs']*0.5
+    df['delta_fs_end'] = df['xs_end'] - df['xf_end']
 
     df['faster_first'] = (df['abs_vf'] > df['abs_vs']).astype(int)
 

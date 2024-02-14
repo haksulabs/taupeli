@@ -52,7 +52,10 @@ model = load_model(modelsavepath + 'model_delta_fs_end.joblib' )
 
 # predict dataset 
 
-stags = [-1, 0, 1]
+#stags = [-1, 0, 1]
+stags = np.percentile(df['delta_fs_end'],[5,50,95])
+stags[1]=0
+
 cond1 = {'d_updown' : 1, 'd_leftright' : 0, 'd_diagonal' : 0}
 cond2 = {'d_updown' : 0, 'd_leftright' : 1, 'd_diagonal' : 0}
 cond3 = {'d_updown' : 0, 'd_leftright' : 0, 'd_diagonal' : 1}
@@ -66,71 +69,85 @@ predict_df=pd.DataFrame()
 #         pre_df = pd.DataFrame({'abs_ttcdiff': x_values, 'stag1':s, 'd_updown':c['d_updown'] , 'd_leftright':c['d_leftright'], 'd_diagonal': c['d_diagonal'] })
 #         predict_df = pd.concat([predict_df,pre_df], ignore_index=True)
 
+
+
+
 for s in stags:
     for c in conds:        
         x_values = np.linspace(df['abs_ttcdiff'].min(), df['abs_ttcdiff'].max(), 100)
         pre_df = pd.DataFrame({'abs_ttcdiff': x_values, 'stag1_1':int(s==1),'stag1_0':int(s==0), 'stag1__1':int(s==-1)  , 'stag1_cat':str(s), 'stag1':s,'delta_fs_end':s , 'd_updown':c['d_updown'] , 'd_leftright':c['d_leftright'], 'd_diagonal': c['d_diagonal'] })
-        predict_df = pd.concat([predict_df,pre_df], ignore_index=True)                        
+        predicted_accuracies = pd.DataFrame(model.predict(pre_df, use_rfx=False, verify_predictions=False, verbose=True, skip_data_checks=True))
+
+        plt.plot(pre_df['abs_ttcdiff'], predicted_accuracies, label=(s, c))
         
-        
-# interactions
-predict_df['stag1:d_updown'] = predict_df['stag1'] *  predict_df['d_updown']
-predict_df['stag1:d_leftright'] = predict_df['stag1'] *  predict_df['d_leftright']
-predict_df['stag1:d_diagonal'] = predict_df['stag1'] *  predict_df['d_diagonal']
-
-predicted_accuracies = pd.DataFrame(model.predict(predict_df, use_rfx=False, verify_predictions=False, verbose=True, skip_data_checks=True))
-
-predict_df['predicted_accuracy'] = predicted_accuracies
-
-
-# Plotting
-
-# Filtering data based on conditions
-updown_data = predict_df[  (predict_df['d_updown'] == 1) & (predict_df['stag1'] == 0)]
-updown_stag_data = predict_df[  (predict_df['d_updown'] == 1) & (predict_df['stag1'] == -1 )]
-updown_stag1_data = predict_df[  (predict_df['d_updown'] == 1) & (predict_df['stag1'] == 1 )]
-
-
-
-leftright_data = predict_df[  (predict_df['d_leftright'] == 1) & (predict_df['stag1'] == 0)]
-leftright_stag_data = predict_df[  (predict_df['d_leftright'] == 1) & (predict_df['stag1'] == -1)]
-leftright_stag1_data = predict_df[  (predict_df['d_leftright'] == 1) & (predict_df['stag1'] == 1)]
-
-diagonal_data = predict_df[  (predict_df['d_diagonal'] == 1) & (predict_df['stag1'] == 0)]
-diagonal_stag_data = predict_df[  (predict_df['d_diagonal'] == 1) & (predict_df['stag1'] == -1)]
-diagonal_stag1_data = predict_df[  (predict_df['d_diagonal'] == 1) & (predict_df['stag1'] == 1)]
-
-# Plotting
-plt.figure(figsize=(10, 6))
-plt.plot(updown_data['abs_ttcdiff'], updown_data['predicted_accuracy'], label='Up/Down stag = 0')
-plt.plot(updown_stag_data['abs_ttcdiff'], updown_stag_data['predicted_accuracy'],  label='Up/Down stag=-1')
-plt.plot(updown_stag1_data['abs_ttcdiff'], updown_stag1_data['predicted_accuracy'],  label='Up/Down stag=1')
-
-
-plt.plot(leftright_data['abs_ttcdiff'], leftright_data['predicted_accuracy'], linestyle='--', label='Left/Right stag = 0')
-plt.plot(leftright_stag_data['abs_ttcdiff'], leftright_stag_data['predicted_accuracy'], linestyle='--', label='Left/Right stag=-1')
-plt.plot(leftright_stag1_data['abs_ttcdiff'], leftright_stag1_data['predicted_accuracy'], linestyle='--', label='Left/Right stag=1')
-
-
-plt.plot(diagonal_data['abs_ttcdiff'], diagonal_data['predicted_accuracy'], linestyle=':', label='Diagonal stag = 0')
-plt.plot(diagonal_stag_data['abs_ttcdiff'], diagonal_stag_data['predicted_accuracy'], linestyle=':', label='Diagonal stag=-1')
-plt.plot(diagonal_stag1_data['abs_ttcdiff'], diagonal_stag1_data['predicted_accuracy'], linestyle=':', label='Diagonal stag=1')
-
-
-
-#plt.plot(leftright_data['abs_ttcdiff'], leftright_data['predicted_accuracy'], marker='s', label='Left/Right')
-
-# plt.plot(diagonal_data['abs_ttcdiff'], diagonal_data['predicted_accuracy'], marker='^', label='Diagonal')
-
-# 
-# plt.plot(leftright_data['abs_ttcdiff'], leftright_data['predicted_accuracy'], marker='s', label='Left/Right stag1')
-# plt.plot(diagonal_data['abs_ttcdiff'], diagonal_data['predicted_accuracy'], marker='^', label='Diagonal stag1')
-
-
-plt.xlabel('abs_ttcdiff')
-plt.ylabel('Predicted Accuracy')
-plt.title('Predicted Accuracy vs abs_ttcdiff for Different Conditions')
-plt.legend()
-plt.grid(True)
+plt.legend()    
 plt.show()
+  
+    # predict_df = pd.concat([predict_df,pre_df], ignore_index=True)                        
+        
+        
+        
+        
+        
+        
+# # interactions
+# predict_df['stag1:d_updown'] = predict_df['stag1'] *  predict_df['d_updown']
+# predict_df['stag1:d_leftright'] = predict_df['stag1'] *  predict_df['d_leftright']
+# predict_df['stag1:d_diagonal'] = predict_df['stag1'] *  predict_df['d_diagonal']
+
+# predicted_accuracies = pd.DataFrame(model.predict(predict_df, use_rfx=False, verify_predictions=False, verbose=True, skip_data_checks=True))
+
+# predict_df['predicted_accuracy'] = predicted_accuracies
+
+
+# # Plotting
+
+# # Filtering data based on conditions
+# updown_data = predict_df[  (predict_df['d_updown'] == 1) & (predict_df['stag1'] == 0)]
+# updown_stag_data = predict_df[  (predict_df['d_updown'] == 1) & (predict_df['stag1'] == -1 )]
+# updown_stag1_data = predict_df[  (predict_df['d_updown'] == 1) & (predict_df['stag1'] == 1 )]
+
+
+
+# leftright_data = predict_df[  (predict_df['d_leftright'] == 1) & (predict_df['stag1'] == 0)]
+# leftright_stag_data = predict_df[  (predict_df['d_leftright'] == 1) & (predict_df['stag1'] == -1)]
+# leftright_stag1_data = predict_df[  (predict_df['d_leftright'] == 1) & (predict_df['stag1'] == 1)]
+
+# diagonal_data = predict_df[  (predict_df['d_diagonal'] == 1) & (predict_df['stag1'] == 0)]
+# diagonal_stag_data = predict_df[  (predict_df['d_diagonal'] == 1) & (predict_df['stag1'] == -1)]
+# diagonal_stag1_data = predict_df[  (predict_df['d_diagonal'] == 1) & (predict_df['stag1'] == 1)]
+
+# # Plotting
+# plt.figure(figsize=(10, 6))
+# plt.plot(updown_data['abs_ttcdiff'], updown_data['predicted_accuracy'], label='Up/Down stag = 0')
+# plt.plot(updown_stag_data['abs_ttcdiff'], updown_stag_data['predicted_accuracy'],  label='Up/Down stag=-1')
+# plt.plot(updown_stag1_data['abs_ttcdiff'], updown_stag1_data['predicted_accuracy'],  label='Up/Down stag=1')
+
+
+# plt.plot(leftright_data['abs_ttcdiff'], leftright_data['predicted_accuracy'], linestyle='--', label='Left/Right stag = 0')
+# plt.plot(leftright_stag_data['abs_ttcdiff'], leftright_stag_data['predicted_accuracy'], linestyle='--', label='Left/Right stag=-1')
+# plt.plot(leftright_stag1_data['abs_ttcdiff'], leftright_stag1_data['predicted_accuracy'], linestyle='--', label='Left/Right stag=1')
+
+
+# plt.plot(diagonal_data['abs_ttcdiff'], diagonal_data['predicted_accuracy'], linestyle=':', label='Diagonal stag = 0')
+# plt.plot(diagonal_stag_data['abs_ttcdiff'], diagonal_stag_data['predicted_accuracy'], linestyle=':', label='Diagonal stag=-1')
+# plt.plot(diagonal_stag1_data['abs_ttcdiff'], diagonal_stag1_data['predicted_accuracy'], linestyle=':', label='Diagonal stag=1')
+
+
+
+# #plt.plot(leftright_data['abs_ttcdiff'], leftright_data['predicted_accuracy'], marker='s', label='Left/Right')
+
+# # plt.plot(diagonal_data['abs_ttcdiff'], diagonal_data['predicted_accuracy'], marker='^', label='Diagonal')
+
+# # 
+# # plt.plot(leftright_data['abs_ttcdiff'], leftright_data['predicted_accuracy'], marker='s', label='Left/Right stag1')
+# # plt.plot(diagonal_data['abs_ttcdiff'], diagonal_data['predicted_accuracy'], marker='^', label='Diagonal stag1')
+
+
+# plt.xlabel('abs_ttcdiff')
+# plt.ylabel('Predicted Accuracy')
+# plt.title('Predicted Accuracy vs abs_ttcdiff for Different Conditions')
+# plt.legend()
+# plt.grid(True)
+# plt.show()
 
